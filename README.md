@@ -9,5 +9,5 @@
 
 `2_econ_control.R` has robustness checks for economic controls.
 
-`fun_script.R` include user defined functions.
+`fun_script.R` includes user defined functions.
 `/data` is the data folder.
