@@ -144,6 +144,6 @@ vol_result <- tidy_coeftest(coef.gdp.stat.vol, 15)
 vol_result
 
 
-## test for small changes ##
+
 
 
