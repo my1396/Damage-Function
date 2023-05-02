@@ -3,7 +3,6 @@
 ##      2. interactive terms + AFE;
 ##      3. interactive terms + IFE;
 
-## make changes on Menghan branch ##
 source("fun_script.R")
 
 library(tidyverse)
