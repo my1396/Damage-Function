@@ -2,3 +2,6 @@
 .Rhistory
 .Rproj.user/
 *.Rproj
+data/population/
+data/SSP585/
+data/cntry_code.csv
