@@ -190,7 +190,12 @@ plot_impact <- function(impact_df, var, title, pattern=NULL){
 }
 
 
-
+## for GCM projections ## ======================================================
+agg_cntry <- function(x, id, w=1) {
+    ## Calculate weighted averages grouped by `id`, weighted by `w`
+    result <- by(cbind(x,w), id, function(d) weighted_mean(d[,1], d[,2], na.rm=TRUE))
+    as.data.frame(cbind(result))
+}
 
 
 
