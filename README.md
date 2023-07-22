@@ -8,6 +8,7 @@
 3.   model with interactive effects + IFE; (Hande's Code)
 
 `2_econ_control.R` has robustness checks for economic controls.
+`3_climate_proj.R` synthesizes Global Climate Model (GCM) projections for future climates.
 
 `fun_script.R` includes user defined functions.
 `/data` is the data folder.
