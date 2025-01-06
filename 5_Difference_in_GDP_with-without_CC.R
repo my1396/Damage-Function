@@ -1,4 +1,4 @@
-# Difference with and without climate change effects
+# Difference in CC impacts on GDP with and without interactive terms
 
 ssp <- "SSP585"
 no_inter <- read_csv(sprintf("data/%s/country_all_impact_nointer_250106.csv", ssp))
