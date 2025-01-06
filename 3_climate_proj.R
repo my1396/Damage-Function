@@ -1,9 +1,10 @@
 ## Climate projection until 2100 
-##  Goal: calculate country weighted average by population;
+##  Goal: calculate country average tmp and pre weighted by population;
 
 ##  Data source: https://esgf-node.llnl.gov/search/cmip6/ ;
-##  experiment id: `ssp585`, var: `tas` and `pr`;
+##  experiment id: `ssp585`, 
 ##  naming convention SSPx-y: SSP-x + RCP-y;
+##  var: `tas` (temperaure) and `pr` (precipitation);
 ##  Note that the unit for `tas` is K; `pr` unit: kg/m2/s;
 
 ##  General procedure:

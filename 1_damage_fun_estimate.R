@@ -68,7 +68,7 @@ tidy_coeftest(coef.gdp.interact, 10)
 
 ## interactive IFE ## ----------------------------------------------------------
 CC_list <- Pdata$iso %>% unique()
-CC_list
+CC_list %>% length()
 Data             = read.csv("data/cntry_ann_climate_gdpKD_1961to2019.csv", 
                             sep = "," , na.strings = "..", dec=".")
 
@@ -81,7 +81,7 @@ Data[,"gdp"]     = diff(log(Data[,"gdp"]), lag = 1)
 Data             = Data[!Data[,"year"]%in%1961,]
 nrow(Data) # 10,324
 
-## Filter out ountries w/ nonstationary gdp and climate ##
+## Filter out countries w/ nonstationary gdp and climate ##
 Data$iso %>% str()
 Data <- Data %>% filter(iso %in% CC_list)
 nrow(Data) # 7076
@@ -238,7 +238,9 @@ IEres <- as_tibble(IEres) %>%
     select(item, everything() )
 IEres
 #
-
+f_name <-"data/IFE_result.csv"
+f_name
+# write_csv(as_tibble(IEres), f_name)
 
 
 

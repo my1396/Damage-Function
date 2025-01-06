@@ -1,7 +1,13 @@
+# ignore system files
 .DS_Store
 .Rhistory
 .Rproj.user/
 *.Rproj
+*.RDS
+*.xlsx
+
+# ignore data
 data/population/
-data/SSP585/
+data/SSP*
 data/cntry_code.csv
+data/historical_climate

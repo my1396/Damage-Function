@@ -35,14 +35,11 @@ addPval <- function(x, df){
 }
 
 addPval.symbol <- function(x){
-    ## add significance as symbols. The p-value of a trend slope 
-    ## is added as symbol as following: 
-    ##      *** (p <= 0.001), ** (p <= 0.01), 
-    ##      * (p <= 0.05), . (p <= 0.1) and no symbol if p > 0.1.
+    ## Add significance symbols.
+    ##      *** (1%), ** (5%), 
+    ##      * (10%), no symbol if p > 10%.
     ## @param x: a numeric vector of p-values
-    # cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-    c <- 10 * .Machine$double.eps
-    cutpoints <- c(0-c, 0.01, 0.05, 0.1, 1)
+    cutpoints <- c(0, 0.01, 0.05, 0.1, 1)
     symbols <- c("***", "**", "*", " ")
     cut(x, breaks=cutpoints, labels=symbols)
 }
