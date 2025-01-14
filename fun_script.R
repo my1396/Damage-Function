@@ -81,6 +81,14 @@ predict_response_interact <- function(beta_hat){
     return (plot_df)
 }
 
+CC_meta <- readr::read_csv("data/region_category.csv")
+CC_meta[,1:4]
+add_country_name <- function(x, col="ISO_C3"){
+    # add country names matching by `col`
+    # `x`: data.frame
+    # `col`: matching column, default to "ISO_C3"
+    x %>% left_join(CC_meta[,c(1,3)], by=setNames("ISO_C3", col) ) 
+}
 ## format outputs ## ===========================================================
 tidy_coeftest <- function(coef_test, nrow=10){
     tible <- broom::tidy(coef_test) %>% head(nrow)
@@ -118,12 +126,35 @@ plot_png <- function(p, fn, width=5.5, height=4, ppi=300){
     print (p)
     dev.off()
 }
+my_theme <- theme(legend.title = element_blank(),
+                  legend.position = c(.9,.9),
+                  legend.text = element_text(size=12),
+                  axis.text = element_text(size=rel(1.2)),
+                  axis.title = element_text(size=rel(1.2)),
+                  plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
+)
 
 library(ggplot2)
 base_tmp <- ggplot() +
     xlim(0, 30) 
 base_pre <- ggplot() +
     xlim(0, 3)
+opt_tmp <- function(pre, 
+                    beta_hat=c(0.011250133, -0.000482, 0.105272317, -0.065583923, 
+                               -0.010637779, 0.000292, 0.006060099, -0.000145) ){
+    # Calculate optimal temp values, given precip levels and parameter estimation;
+    # @pre: precip levels;
+    # @beta_hat: parameter values, default `beta_hat` uses IFE model (interactive FE);
+    sapply(pre, function(x) (-beta_hat[1]-beta_hat[5]*x-beta_hat[7]*x^2)/(2*beta_hat[2]+2*beta_hat[6]*x+2*beta_hat[8]*x^2) )
+}
+opt_pre <- function(tmp, 
+                    beta_hat=c(0.011250133, -0.000482, 0.105272317, -0.065583923, 
+                               -0.010637779, 0.000292, 0.006060099, -0.000145) ){
+    # Calculate optimal precip values as a function of tmp levels and parameter estimation;
+    # @tmp: tmp levels;
+    # @beta_hat: parameter values, default `beta_hat` uses IFE model
+    sapply(tmp, function(x) (-beta_hat[3]-beta_hat[5]*x-beta_hat[6]*x^2)/(2*beta_hat[4]+2*beta_hat[7]*x+2*beta_hat[8]*x^2) )
+}
 
 show_palette <- function(colors) {
     n <- length(colors)
