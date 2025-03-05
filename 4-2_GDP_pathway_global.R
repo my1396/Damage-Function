@@ -157,7 +157,7 @@ impact_df
 impact_df %>% tail()
 f_name <- paste0("data/", sprintf("%s/global_impact_projections.csv", ssp))
 f_name
-write_csv(impact_df, f_name)
+# write_csv(impact_df, f_name)
 
 plot_data <- impact_df %>% 
     mutate_at(-1, ~.*100)

@@ -1,3 +1,9 @@
+# Fig. 3: projections until 2100
+# (a) Global pathways, disentangled effects
+# (b) Histogram SSP126 and 585
+# (c) Map of country-level climate change impacts in 2100, SSP585
+# (d) Map of country-level interactive effects, SSP585.
+
 # global pathways ==============================================================
 ## disentangle into 3 effects
 ssp1 <- read_csv(paste0("data/", sprintf("%s/global_impact_projections.csv", "SSP126")))
@@ -48,6 +54,8 @@ ssp1 <- read_csv("/Users/menghan/Documents/GDP/Shared folder/data/SSP126/country
 ssp5 <- read_csv("/Users/menghan/Documents/GDP/Shared folder/data/SSP585/country_all_impact_inter_250106.csv")
 colnames(ssp1)[81] <- "V80"
 colnames(ssp5)[81] <- "V80"
+ssp1[,c(1,81)] %>% arrange(desc(V80) )
+ssp5[,c(1,81)] %>% arrange(desc(V80) )
 
 plot_data <- ssp1[,c("ISO_C3", "V80")] %>% 
     left_join(ssp5[,c("ISO_C3", "V80")], by="ISO_C3", suffix=c("_126", "_585"))
@@ -65,7 +73,7 @@ p_hist <- ggplot(data=long_format, aes(value, fill=key) ) +
     scale_fill_manual(values=fills, labels = labels) +
     labs(x="Climate change impact until 2100") +
     theme(axis.title.y=element_blank(),
-          legend.position = c(0.8, 0.9),
+          legend.position = c(0.8, 0.8),
           legend.margin = margin(t=0, b=0, unit="mm"),
           legend.title = element_blank(),)
 p_hist
@@ -187,6 +195,16 @@ p_all <- plot_grid(plot_grid(p_pathway + theme(plot.margin = margin(0,0,15,15),
                    labels=sprintf("(%s)", letters[1:4]), 
                    label_size=16)
 p_all
+
+plot_grid(plot_grid(p_pathway + theme(plot.margin = margin(5,0,25,25)), 
+                    p_hist + theme(plot.margin = margin(5,10,15,35), legend.position = c(0.8, 0.85)), 
+                    nrow = 1, 
+                    rel_widths = c(1.2,1), labels = c("(a)", "(b)")
+                    ),
+          plot_grid(p_map, p_map_diff, nrow = 2, labels = c("(c)", "(d)"), hjust=-8), 
+          rel_heights = c(1,2.5),
+          nrow=2)
+
 f_name <- "figures/Fig2_3.png"
 f_name
 ggsave(f_name)

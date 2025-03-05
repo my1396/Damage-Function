@@ -6,6 +6,7 @@ count <- plyr::count
 summarise <- dplyr::summarise
 rename <- dplyr::rename
 TeX <- latex2exp::TeX
+margin <- ggplot2::margin
 
 rep.row <- function(x,n){matrix(rep(x,each=n),nrow=n)}
 rep.col <- function(x,n){matrix(rep(x,each=n),ncol=n, byrow=TRUE)}
@@ -131,8 +132,8 @@ my_theme <- theme(legend.title = element_blank(),
                   legend.text = element_text(size=12),
                   axis.text = element_text(size=rel(1.2)),
                   axis.title = element_text(size=rel(1.2)),
-                  plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
-)
+                  # plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
+                  )
 
 library(ggplot2)
 base_tmp <- ggplot() +

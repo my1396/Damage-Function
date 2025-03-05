@@ -1,7 +1,7 @@
 # Diff and precip trends, check whether there is a positive correlation
 
 
-# G124 [√], relate diff to pre trend, significant positive correlation
+# G124 [√], relate IE-effects to pre trend, significant positive correlation
 plot_data <- end_climate[,c("ISO_C3", "diff", "group")] %>% 
     filter(group==124) %>% 
     left_join(pre_df[,c("ISO_C3", "trend_annual", "Pvalue")], by="ISO_C3") %>% 

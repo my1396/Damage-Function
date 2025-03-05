@@ -69,7 +69,7 @@ diff_df %>%
     arrange(diff) %>% 
     add_country_name()
 cast_6 <- with(diff_df, diff<0 & `2100.deltaAll.noInter`>0 & `2100.deltaAll.Inter`<0)
-
+sum(cast_6)
 # diff<0, NEG + NEG: 15 countries
 diff_df %>% 
     filter(diff<0 & `2100.deltaAll.noInter`<0 & `2100.deltaAll.Inter`<0 ) %>% 
@@ -77,7 +77,7 @@ diff_df %>%
     arrange(diff) %>% 
     add_country_name()
 cast_15 <- with(diff_df, diff<0 & `2100.deltaAll.noInter`<0 & `2100.deltaAll.Inter`<0)
-
+sum(cast_15)
 # 11 countries
 diff_df %>% 
     filter(diff<0 & `2100.deltaAll.noInter`>0 & `2100.deltaAll.Inter`>0 ) %>% 
@@ -85,7 +85,7 @@ diff_df %>%
     arrange(diff) %>% 
     add_country_name()
 cast_11 <- with(diff_df, diff<0 & `2100.deltaAll.noInter`>0 & `2100.deltaAll.Inter`>0)
-
+sum(cast_11)
 
 diff_df[cast_124, "group"] <- 124
 diff_df[cast_6, "group"] <- 6

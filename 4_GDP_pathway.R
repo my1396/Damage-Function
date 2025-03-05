@@ -19,6 +19,7 @@ time_vec <- ymd("2020-12-31") %m+% years(1:80)
 time_vec
 ## Temp effects ================================================================
 beta_hat <- read_csv("data/IFE_result.csv")
+# use the first two coefficients
 beta_hat <- beta_hat$estimate[1:8] %>% 
     head(2)
 beta_hat
@@ -51,6 +52,7 @@ f_name
 
 ## No interactive terms ========================================================
 beta_hat <- read_csv("data/IFE_result.csv")
+# use the first four coefficients
 beta_hat <- beta_hat$estimate[1:4]
 beta_hat
 
@@ -143,6 +145,7 @@ f_name
 
 ## With interactive terms ======================================================
 beta_hat <- read_csv("data/IFE_result.csv")
+# use the whole eight coefficients
 beta_hat <- beta_hat$estimate[1:8]
 beta_hat
 

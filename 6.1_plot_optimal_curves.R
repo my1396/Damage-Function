@@ -39,7 +39,10 @@ linetypes <- setNames(c("solid", "dashed"), breaks)
 linewidths <- setNames(c(0.8, 0.8), breaks)
 labels <- c("IFE"="IFE", "Burke"=TeX("Burke ($T^*$=12.8 ºC)") )
 # process outliers
-# remove "MNG" because it has unusually low temperature
+# remove "MNG" because it has unusually low temperature (0.0851ºC)
+#     ISO_C3 `2100.deltaAll.Inter` `2100.deltaAll.noInter`  diff group end.tmp end.pre drying
+#     <chr>                  <dbl>                   <dbl> <dbl> <fct>   <dbl>   <dbl> <lgl> 
+# 1    MNG                     6.11                    17.8 -11.7 11     0.0851   0.427 FALSE 
 p_opt_tmp <- ggplot(end_climate %>% filter(!ISO_C3=="MNG"), aes(x=end.pre, y=end.tmp, color=group)) +
     geom_point(aes(shape=drying), size=2.5) +
     geom_text(data=end_climate %>% filter(ISO_C3 %in% country_vec),
