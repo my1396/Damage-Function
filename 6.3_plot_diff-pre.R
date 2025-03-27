@@ -1,4 +1,5 @@
 # Diff and precip trends, check whether there is a positive correlation
+# Combine with optimal curves, constitute Fig. 2c
 
 
 # G124 [√], relate IE-effects to pre trend, significant positive correlation
@@ -46,7 +47,9 @@ ggplot(plot_data, aes(trend_annual, diff, color=group)) +
     scale_color_manual(values=c("6"="#008B45FF", "11"="#D62728FF", "15"="#FF7F0EFF", "124"="#1F77B4FF"), 
                        labels=c("6"="6", "11"="10", "15"="15", "124"="124"))
 
-# G11, related diff to tmp trend, no obvious pattern
+
+# What: relate diff to tmp trend for G11
+# Conclusion: no obvious pattern
 plot_data <- end_climate[,c("ISO_C3", "diff", "group")] %>% 
     filter((!ISO_C3=="MNG") & group==11) %>% 
     left_join(tmp_df[,c("ISO_C3", "trend_annual")], by="ISO_C3")

@@ -7,6 +7,7 @@ summarise <- dplyr::summarise
 rename <- dplyr::rename
 TeX <- latex2exp::TeX
 margin <- ggplot2::margin
+library(tidyverse)
 
 rep.row <- function(x,n){matrix(rep(x,each=n),nrow=n)}
 rep.col <- function(x,n){matrix(rep(x,each=n),ncol=n, byrow=TRUE)}
@@ -135,7 +136,6 @@ my_theme <- theme(legend.title = element_blank(),
                   # plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
                   )
 
-library(ggplot2)
 base_tmp <- ggplot() +
     xlim(0, 30) 
 base_pre <- ggplot() +

@@ -1,4 +1,6 @@
-# Plot optimal curves with current climate in 2019
+# Plot optimal curves with country current climates in 2019
+# Figs. 2a and 2b
+
 source("fun_script.R")
 ssp <- "SSP585"
 tmp_df <- read_csv(sprintf("data/%s/climate_trend/climate_trend_tas.csv", ssp))
@@ -20,7 +22,7 @@ diff_df <- read_csv(f_name)
 diff_df <- diff_df %>% mutate(group=factor(group))
 
 end_climate <- diff_df %>% 
-    left_join(country_points, by="ISO_C3") %>% # join climate 2019
+    left_join(country_points, by="ISO_C3") %>% # join current climate 2019
     left_join(climate_df[,c("ISO_C3", "drying")], by="ISO_C3") # join dry/wet
 country_vec <- c("USA", "AUS", "SWE", "TJK", "MEX", "BRA", "GBR") # select country labels
 end_climate %>% 
@@ -93,13 +95,13 @@ p_opt_pre <- base_tmp +
     ) +
     geom_hline(aes(yintercept=1.734513, linetype="Burke", linewidth="Burke"), color="black") +
     # add country points
-    # geom_point(data=end_climate %>% filter(ISO_C3 %in% country_vec), aes(x=end.tmp, y=end.pre), size=2.5) + 
+    # geom_point(data=end_climate %>% filter(ISO_C3 %in% country_vec), aes(x=end.tmp, y=end.pre), size=2.5) +
     # geom_text(data=end_climate %>% filter(ISO_C3 %in% country_vec),
     #           aes(x=end.tmp, y=end.pre, label=ISO_C3),
-    #           hjust=-0.3, vjust=-0.1, 
+    #           hjust=-0.3, vjust=-0.1,
     #           size=3.5, fontface="bold",
     #           show.legend = FALSE
-    #         ) + 
+    #         ) +
     labs(x="Annual Average temperature [ºC]", y="Optimal precipitation [Meters]") +
     scale_linetype_manual(values=linetypes, breaks=breaks, labels = labels) +
     scale_linewidth_manual(values=linewidths, breaks=breaks, labels = labels) +
@@ -127,12 +129,12 @@ p_opt_all <- plot_grid(p_opt_tmp,
 )
 p_opt_all
 
-f_name <- sprintf("figures/climate_2019_opt-tmp-pre_%s_2.png", ssp)
+f_name <- sprintf("figures/climate_2019_opt-tmp-pre_%s.png", ssp)
 # ggsave(f_name)
 plot_png(p_opt_all, f_name, 18.7, 7.59 )
 
 
-# optimal precip with country points
+# optimal precip with grouped country points
 base_tmp +
     geom_function(fun = opt_pre, 
                   color="black", linetype="solid",
@@ -145,7 +147,8 @@ base_tmp +
               hjust=-0.3, vjust=-0.1, 
               size=3.5, fontface="bold") +
     scale_shape_manual(values=c("TRUE"=4, "FALSE"=19)) +
-    scale_color_manual(values=c("6"="#008B45FF", "11"="#D62728FF", "15"="#FF7F0EFF", "124"="#1F77B4FF")) +
+    scale_color_manual(values=c("6"="#008B45FF", "11"="#D62728FF", "15"="#FF7F0EFF", "124"="#1F77B4FF"), 
+                       labels=c("6"="6", "11"="10", "15"="15", "124"="124")) +
     scale_y_continuous(limits = c(0,3))
 
 

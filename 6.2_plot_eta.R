@@ -1,4 +1,6 @@
 # Plot eta pathways per country
+# eta is the change of response function, representing the impacts of CC on GDP growth
+# Fig NOT included in the paper.
 
 no_inter_eta <- read_csv(sprintf("data/%s/country_eta_nointer.csv", ssp))
 inter_eta <- read_csv(sprintf("data/%s/country_eta_inter.csv", ssp))
