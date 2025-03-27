@@ -5,6 +5,7 @@
 *.Rproj
 *.RDS
 *.xlsx
+*.html
 
 # ignore data
 data/population/
@@ -12,3 +13,4 @@ data/SSP*
 data/cntry_code.csv
 data/historical_climate
 figures/
+6.5_Fig3.R

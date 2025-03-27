@@ -205,7 +205,7 @@ plot_grid(plot_grid(p_pathway + theme(plot.margin = margin(5,0,25,25)),
           rel_heights = c(1,2.5),
           nrow=2)
 
-f_name <- "figures/Fig2_3.png"
+f_name <- "figures/Fig3.png"
 f_name
 ggsave(f_name)
 # plot_png(p_all, f_name, 26.2, 10.4)
