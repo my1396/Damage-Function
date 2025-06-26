@@ -2,7 +2,7 @@
 ## per bootstrap.
 
 ## Load data -------------------------------------------------------------------
-f_name <- "data//bootstrap58_coef.csv" 
+f_name <- "data/bootstrap58_coef.csv" 
 f_name
 IEres_1000 <- read_csv(f_name)
 IEres_1000
@@ -21,7 +21,7 @@ ssp <- "SSP585"
 
 pop_weight <- pop_weight_df %>% filter(Scenario == substr(ssp, 1, 4))
 pop_weight
-pop_weight <- pop_weight[,c(-1,-2,-4,-5)]
+pop_weight <- pop_weight[, c(-1,-2,-4,-5)]
 
 ## GDP growth in absence of CC, baseline growth 
 f_name <- sprintf("data/baseline_growth/%s_GrowthProjections.csv", substr(ssp, 1, 4))

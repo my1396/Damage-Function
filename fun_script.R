@@ -7,6 +7,7 @@ summarise <- dplyr::summarise
 rename <- dplyr::rename
 TeX <- latex2exp::TeX
 margin <- ggplot2::margin
+lag <- dplyr::lag
 library(tidyverse)
 
 rep.row <- function(x,n){matrix(rep(x,each=n),nrow=n)}
