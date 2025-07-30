@@ -117,8 +117,10 @@ gdp_SSP <- read_csv(f_name)
 gdp_SSP[,70:81]
 colnames(gdp_SSP)[-1] <- seq(2021, 2100)
 Delta_all_df <- Delta_all_df %>% 
-    left_join(gdp_SSP, by=c("ISO_C3"="Region"), 
-              suffix = c(".deltaAll", ".baseline")) %>% 
+    left_join(gdp_SSP, 
+              by = c("ISO_C3" = "Region"), 
+              suffix = c(".deltaAll", ".baseline")
+              ) %>% 
     drop_na() 
 Delta_all_df %>% dim()
 

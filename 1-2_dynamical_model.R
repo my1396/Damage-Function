@@ -1,3 +1,17 @@
+## Additive fixed effects model
+## Dynamic models: with lagged dependent and independent variables
+## ARDL(1,1) was estimated 
+## M0: static
+## M1 to M4: first lagged dependent variable
+##      M1 (pgmm) and M2 (pdynmc): no time trend
+##      M3: linear time trend
+##      M4: quadratic time trend
+## M5 to M7: first lagged independent variables
+##      M5: no time trend
+##      M6: linear time trend
+##      M7: quadratic time trend
+
+
 source("fun_script.R")
 
 library(tidyverse)
@@ -13,8 +27,12 @@ f_name
 
 Pdata <- read_csv(f_name)
 Pdata <- Pdata %>%
-  mutate(tmp_pre = tmp * pre, tmp2_pre = tmp2 * pre, pre2_tmp = pre2 *
-    tmp, tmp2_pre2 = tmp2 * pre2)
+  mutate(
+      tmp_pre = tmp * pre, 
+      tmp2_pre = tmp2 * pre, 
+      pre2_tmp = pre2 *tmp, 
+      tmp2_pre2 = tmp2 * pre2
+      )
 Pdata %>%
   head(5) %>%
   as.data.frame()
@@ -42,8 +60,9 @@ Pdata <- cbind(Pdata, ttrend, ttrend2)
 regressor_t <- colnames(Pdata)[startsWith(colnames(Pdata), "T")]
 regressor_t
 
-## baseline ##
 ## -------------------------------------------------------------------------- ##
+## Static ----------------------------------------------------------------------
+## Burke baseline ##
 regressor_v0 <- c("tmp", "tmp2", "pre", "pre2")
 
 Pdata %>%
@@ -60,7 +79,7 @@ coef.gdp <- coeftest(ml.gdp, vcovHC(ml.gdp, type = "HC0", cluster = "group"))
 tidy_coeftest(coef.gdp, 10)
 
 
-## interactive AFE ##
+## AFE with interactive terms ##
 ## -------------------------------------------------------------------------- ##
 regressor_v1 <- c("tmp", "tmp2", "pre", "pre2", "tmp_pre", "tmp2_pre",
   "pre2_tmp", "tmp2_pre2")
@@ -73,6 +92,8 @@ coef.gdp.interact <- coeftest(ml.gdp.interact, vcovHC(ml.gdp.interact,
   type = "HC0", cluster = "group"))
 tidy_coeftest(coef.gdp.interact, 10)
 
+
+## Dynamic ---------------------------------------------------------------------
 ## Lagged dependent ##
 ## -------------------------------------------------------------------------- ##
 GDPdata <- read_csv("data/cntry_ann_climate_gdpKD_1961to2019.csv",
@@ -99,7 +120,7 @@ form.AR1 <- dynformula(reg_f.gdp.interact, c(list(1), as.list(rep(0,
   8 + N.obs * 2))))
 
 
-# no time trend ----------------------------------------------------------------
+### no time trend --------------------------------------------------------------
 reg_f.gdp.interact.AR1 <- pgmm(logD_gdp ~ lag(logD_gdp) + tmp +
   tmp2 + pre + pre2 + tmp_pre + tmp2_pre + pre2_tmp + tmp2_pre2 |
   lag(logD_gdp, 2:3), data = Pdata_nomissing, index = c("iso",
@@ -157,7 +178,7 @@ summary(reg_f.gdp.interact.ARDL1_pdynmc)$coef %>%
     head(17) %>% 
     rownames()
 
-# linear time trend ------------------------------------------------------------
+### linear time trend ----------------------------------------------------------
 reg_f.gdp.interact.AR1_time_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -197,7 +218,7 @@ summary(reg_f.gdp.interact.ARDL1_time_pdynmc)
 summary(reg_f.gdp.interact.ARDL1_time_pdynmc)$coef %>%
     head(17)
 
-# quadratic time trend ---------------------------------------------------------
+### quadratic time trend -------------------------------------------------------
 reg_f.gdp.interact.AR1_time2_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -366,6 +387,16 @@ modelsummary(models[-2], stars = TRUE, fmt = 6,
                  "L0.pre2_tmp", "L1.pre2_tmp", "L0.tmp2_pre2", "L1.tmp2_pre2"), 
              estimate = "estimate", std.error = "std.error",
              statistic = "statistic", p.value = "p.value", )
+
+## save to local
+AFE_dynamic <- map(list(M0, M1, M2, M3, M4, M5, M6, M7), 1) %>% 
+    bind_rows(.id = "model")
+AFE_dynamic <- AFE_dynamic %>% mutate(pval.symbol = addPval.symbol(p.value))
+f_name <- "data/AFE_dynamic.csv"
+# write_csv(AFE_dynamic, f_name)
+
+
+
 
 
 

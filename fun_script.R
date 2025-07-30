@@ -42,7 +42,8 @@ addPval.symbol <- function(x){
     ##      *** (1%), ** (5%), 
     ##      * (10%), no symbol if p > 10%.
     ## @param x: a numeric vector of p-values
-    cutpoints <- c(0, 0.01, 0.05, 0.1, 1)
+    c <- 10 * .Machine$double.eps
+    cutpoints <- c(0-c, 0.01, 0.05, 0.1, 1)
     symbols <- c("***", "**", "*", " ")
     cut(x, breaks=cutpoints, labels=symbols)
 }
