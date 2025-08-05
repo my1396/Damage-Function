@@ -29,7 +29,7 @@ setdiff(Delta_tmp_df$ISO_C3, gdp_SSP$Region)
 # Merge with baseline GDP
 Delta_tmp_df <- Delta_tmp_df %>% 
     left_join(gdp_SSP, by=c("ISO_C3"="Region")) %>% 
-    drop_na() 
+    drop_na() # remove countries without GDP data
 Delta_tmp_df
 # growth without CC
 gdp_nCC <- Delta_tmp_df[,82:161]

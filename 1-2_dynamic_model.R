@@ -392,7 +392,7 @@ modelsummary(models[-2], stars = TRUE, fmt = 6,
 AFE_dynamic <- map(list(M0, M1, M2, M3, M4, M5, M6, M7), 1) %>% 
     bind_rows(.id = "model")
 AFE_dynamic <- AFE_dynamic %>% mutate(pval.symbol = addPval.symbol(p.value))
-f_name <- "data/AFE_dynamic.csv"
+f_name <- "data/AFE_dynmc.csv"
 # write_csv(AFE_dynamic, f_name)
 
 

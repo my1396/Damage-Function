@@ -1,17 +1,29 @@
 ## Forecast economic growth under dynamic models
+##    1. Convert ARDL coefficients to MA representation
+##    2. Project future growth using climate projections
+##          2.1 Impact of climate change on GDP growth (eta), two scenarios:
+##              a. with interactive terms;
+##              b. without interactive terms;
+##          2.2 Project GDP pathway from 2020 to 2100, two scenarios:
+##              a. with climate change -> GDP_cc;
+##              b. without climate change (baseline growth) -> GDP_nCC;
+##          2.3 Cumulative impacts until 2100, GDP_cc/GDP_nCC-1 (delta)
+
 library(tidyverse)
 library(data.table)
+source("fun_script.R")
 
-f_name <- "data/AFE_dynamic.csv"
+f_name <- "data/AFE_dynmc.csv"
 AFE_dynamic <- read_csv(f_name)
 AFE_dynamic$model %>% unique()
 
 # choose model
+model_id <- "AFE"
 beta_hat <- AFE_dynamic %>% filter(model == 8)
 
 # ============================================================================ #
 # ARDL > MA representation -----------------------------------------------------
-# divide by AR lag polynomial 
+# preprocess raw coef: divide by AR lag polynomial 
 lag_poly_solution <- function(rho1, beta0, beta1, n_terms = 5) {
     # Calculate polynomial division psi(L) = rho(L)^(-1) * beta(L)
     # rho(L) = 1 - rho1*L
@@ -26,21 +38,19 @@ lag_poly_solution <- function(rho1, beta0, beta1, n_terms = 5) {
 }
 
 
-# get MA coefficient for each regressor
-var_list <- c("T", "T2", "P", "P2", "T*P", "T2*P", "T*P2", "T2*P2")
+# get MA coefficients for each regressor
+# initialize containers
+var_list <- c("T", "T2", "P", "P2", "T*P", "T2*P", "T*P2", "T2*P2") # x-axis names
 psi_df <- list() # L x 8, each col is rho(L)^(-1) * beta_j(L), j = 1,...,8
 mean_lag <- numeric(length(var_list))
+plot <- FALSE # whether to plot MA coefficients
 
 for (j in 1:8){
+    # get MA coefficients and plot bar plot
     var <- var_list[j]
     idx <- j * 2
     rho <- beta_hat$estimate[1]
     beta_j <- beta_hat$estimate[idx:(idx + 1)]
-    
-    title <- sprintf("Lag Polynomial Coefficients. Regressor: %s", var)
-    par <- sprintf("beta0:%.2e, beta1:%.2e, rho:%.2f", beta_j[1], beta_j[2], rho)
-    print(title)
-    print(par)
     
     psi_coef <- lag_poly_solution(rho1 = rho, beta0 = beta_j[1], beta1 = beta_j[2], n_terms = 20)
     psi_coef
@@ -49,20 +59,27 @@ for (j in 1:8){
     mean_lag[j] <- sum(0:20 * psi_coef)/sum(psi_coef)
     
     # plot lag polynomial coefficients, psi0, psi1, ..., psi20
-    plot_df <- tibble(
-        lag = 1:21,
-        coef = psi_coef
+    if (plot) {
+        title <- sprintf("Lag Polynomial Coefficients. Regressor: %s", var)
+        par <- sprintf("beta0:%.2e, beta1:%.2e, rho:%.2f", beta_j[1], beta_j[2], rho)
+        print(title)
+        print(par)
+
+        plot_df <- tibble(
+            lag = 1:21,
+            coef = psi_coef
         )
-    p <- ggplot(plot_df, aes(x = lag, y = coef)) +
-        geom_bar(stat = "identity", fill = "steelblue") +
-        labs(x = "Lag", 
-             y = expression(psi[L]), 
-             title = title,
-             subtitle = par)
-    
-    f_name <- sprintf("figures/lag_polynomial/AFE_dynamic_lag_poly_%s.png", var)
-    f_name
-    plot_png(p, f_name, 9.26, 6.27)
+        p <- ggplot(plot_df, aes(x = lag, y = coef)) +
+            geom_bar(stat = "identity", fill = "steelblue") +
+            labs(x = "Lag", 
+                 y = expression(psi[L]), 
+                 title = title,
+                 subtitle = par)
+        
+        f_name <- sprintf("figures/lag_polynomial/AFE_dynamic_lag_poly_%s.png", var)
+        f_name
+        # plot_png(p, f_name, 9.26, 6.27)
+    }
 }
 
 psi_df <- do.call(cbind, psi_df) %>% 
@@ -70,47 +87,39 @@ psi_df <- do.call(cbind, psi_df) %>%
     as_tibble(rownames = "lag")
 psi_df
 psi_df %>% str()
-f_name <- "data/AFE_dynamic_lag_poly.csv"
+f_name <- "data/AFE_dynmc_lag_poly.csv"
 f_name
 # write_csv(psi_df, f_name)
-
-# Retain only the first 5 lags -------------------------------------------------
-psi_df %>% 
-    select(-lag) %>% 
-    head(5)
-
-psi_vec <- psi_df %>% 
-    select(-lag) %>% 
-    head(5) %>% 
-    as.matrix() %>% 
-    as.vector()
-psi_vec # this is the MA coefficients
-
 
 # Plot mean lag for each variable ----------------------------------------------
 plot_data <- tibble(
     variable = factor(var_list, levels = var_list),
     mean_lag = mean_lag
-    )
+)
 p <- ggplot(plot_data, aes(x = variable, y = mean_lag)) +
     geom_bar(stat = "identity", fill = "steelblue") +
-    labs(x = "Variable", 
-         y = "Mean Lag (years)", 
-         title = "Mean Lag of Lag Polynomial Coefficients",
-         subtitle = "AFE Dynamic Model")
+    labs(
+        x = "Variable",
+        y = "Mean Lag (years)",
+        title = "Mean Lag of Lag Polynomial Coefficients",
+        subtitle = "AFE Dynamic Model"
+    )
 p
 f_name <- "figures/lag_polynomial/AFE_dynamic_lag_poly_mean_lag.png"
 # plot_png(p, f_name, 9.29, 5.25)
+
 
 # ============================================================================ #
 # Projection -------------------------------------------------------------------
 
 # choose ssp scenario: one of "SSP126", "SSP245", "SSP370", "SSP585"
-# ssp <- "SSP126"
+ssp <- "SSP126"
 # ssp <- "SSP245"
 # ssp <- "SSP370"
-ssp <- "SSP585"
+# ssp <- "SSP585"
 
+
+## Prepare regressor matrix ----------------------------------------------------
 ## load climate projections
 tmp_df <- read_csv(sprintf("data/%s/climate_trend/climate_trend_tas.csv", ssp))
 pre_df <- read_csv(sprintf("data/%s/climate_trend/climate_trend_pr.csv", ssp))
@@ -180,7 +189,35 @@ ordered_cols <- c(
 regressor_df_lags <- regressor_df_lags[ordered_cols]
 regressor_df_lags
 
-# Extract regressor matrix 
+
+## Prepare regression coefficients -----------------------------------------------
+# Retain only the first 5 lags 
+psi_df %>%
+    select(-lag) %>%
+    head(5)
+
+# whether to include interactive terms in the model
+# interactive_terms <- TRUE
+interactive_terms <- FALSE
+if (interactive_terms) {
+    # with interactive terms
+    psi_vec <- psi_df %>%
+        select(-lag) %>%
+        head(5) %>% # first 5 lags
+        as.matrix() %>%
+        as.vector()
+} else {
+    # without interactive terms
+    psi_vec <- psi_df %>%
+        select(-lag) %>%
+        head(5) %>%
+        mutate(across(5:8, ~0)) %>% # make interactive terms zero
+        as.matrix() %>%
+        as.vector()
+}
+psi_vec # preview the MA coefficients
+
+## Predict expected GDP growth -------------------------------------------------
 X <- as.matrix(regressor_df_lags[, 3:42])
 y_hat <- X %*% psi_vec
 y_hat <- regressor_df_lags[, 1:2] %>% 
@@ -193,17 +230,23 @@ Delta_all_df <- y_hat %>%
         names_from = "year",
         values_from = "y_hat"
     )
+colnames(Delta_all_df)[-1] <- seq(2021, 2100)
 Delta_all_df
-colnames(Delta_all_df)[-1] <- seq(2020, 2099)
-f_name <- sprintf("data/%1$s/%1$s_country_eta_dynamic_inter.csv", ssp)
+f_name <- ifelse(interactive_terms, 
+       sprintf("data/%1$s/%1$s_country_eta_%2$s_dynmc_inter.csv", ssp, model_id),
+       sprintf("data/%1$s/%1$s_country_eta_%2$s_dynmc_no_inter.csv", ssp, model_id))
 f_name
 # write_csv(Delta_all_df, f_name)
 
+
+## Calculate GDP pathway with and without CC -> cumulative effects -------------
 ## baseline growth, growth without CC
 f_name <- sprintf("data/baseline_growth/%s_GrowthProjections.csv", substr(ssp, 1, 4))
 f_name
 gdp_SSP <- read_csv(f_name)
 gdp_SSP
+colnames(gdp_SSP)[-1] <- seq(2021, 2100)
+gdp_SSP[, 70:81]
 Delta_all_df <- Delta_all_df %>% 
     left_join(
         gdp_SSP, 
@@ -222,7 +265,7 @@ CC_country <- apply(
     function(x) cumprod(replace(x, is.na(x), 1))
     ) %>% 
     t()
-
+# cumulative effects
 pct_impact_country <- CC_country/baseline_country - 1
 pct_impact_country <- pct_impact_country %>% 
     as_tibble() %>%
@@ -232,47 +275,11 @@ dim(pct_impact_country)
 pct_impact_country[1:5, 1:10]
 pct_impact_country[1:5, c(1, 72:81)]
 
-f_name <- sprintf("data/%1$s/%1$s_country_all_impact_inter_dynmc_250729.csv", ssp)
+f_name <- ifelse(interactive_terms, 
+       sprintf("data/%1$s/%1$s_country_all_impact_inter_%2$s_dynmc_250729.csv", ssp, model_id),
+       sprintf("data/%1$s/%1$s_country_all_impact_nointer_%2$s_dynmc_250729.csv", ssp, model_id))
 f_name
 # write_csv(pct_impact_country, f_name)
-
-
-# ============================================================================ #
-# Cumulative effects in 2100, merge all SSPs -----------------------------------
-
-ssps  <- c("SSP126", "SSP245", "SSP370", "SSP585")
-files <- sprintf("data/%1$s/%1$s_country_all_impact_inter_dynmc_250729.csv", ssps)
-names(files) <- ssps
-
-impact_2099 <- imap_dfr(
-    files,
-    ~ read_csv(.x, show_col_types = FALSE) %>%
-        select(ISO_C3, `2099.deltaAll`) %>%
-        mutate(SSP = .y)
-    ) %>%
-    pivot_wider(
-        names_from  = SSP,
-        values_from = `2099.deltaAll`
-    ) %>%
-    arrange(ISO_C3)
-
-impact_2099
-
-f_name <- "data/AFE_dynamic_cumu_effect_2100.csv"
-f_name
-write_csv(impact_2099, f_name)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,4 +1,5 @@
 # Difference in CC impacts on GDP with and without interactive terms
+# Obsolete: Use ""5.0_difference_static.R"" and 5.""1_difference_dynamic.R"" instead.
 
 ssp <- "SSP585"
 no_inter <- read_csv(sprintf("data/%s/country_all_impact_nointer_250106.csv", ssp))

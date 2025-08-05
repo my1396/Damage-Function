@@ -93,6 +93,7 @@ add_country_name <- function(x, col="ISO_C3"){
     # `col`: matching column, default to "ISO_C3"
     x %>% left_join(CC_meta[,c(1,3)], by=setNames("ISO_C3", col) ) 
 }
+
 ## format outputs ## ===========================================================
 tidy_coeftest <- function(coef_test, nrow=10){
     tible <- broom::tidy(coef_test) %>% head(nrow)
@@ -110,7 +111,7 @@ format_reg_tbl <- function(tab){
                                           "pre2_tmp", "tmp2_pre2", econ_control_var))) %>% 
         arrange(term)
 }
-    
+
 get_latex_tible <- function(coef_test, nrow=4){
     ## convert regression result to latex table
     tible <- broom::tidy(coef_test) %>% head(nrow)
@@ -122,6 +123,67 @@ get_latex_tible <- function(coef_test, nrow=4){
           hline.after = NULL, include.rownames=FALSE)
 }
 
+format_cross_tab <- function(categorized_df) {
+    # Format cross tabulation table for better readability
+    # Used to summarize scenario counts based on signs of differences
+    #
+    # @param categorized_df: a data frame contains columns diff_sign, inter_sign, nointer_sign
+    # @output: formatted table, 2 X 2 X 2.
+
+    all_combinations <- expand.grid(
+        diff_sign = c("negative", "positive"),
+        inter_sign = c("negative", "positive"),
+        nointer_sign = c("negative", "positive")
+    )
+
+    scenario_counts <- categorized_df %>%
+        group_by(diff_sign, inter_sign, nointer_sign) %>%
+        summarize(n_countries = n(), .groups = "drop") %>%
+        right_join(all_combinations, by = c("diff_sign", "inter_sign", "nointer_sign")) %>%
+        mutate(n_countries = replace_na(n_countries, 0)) %>%
+        arrange(diff_sign, inter_sign, nointer_sign)
+
+    table_neg <- scenario_counts %>%
+        filter(diff_sign == "negative") %>%
+        select(-diff_sign) %>%
+        mutate(
+            inter_sign = factor(inter_sign, levels = c("positive", "negative")),
+            nointer_sign = factor(nointer_sign, levels = c("positive", "negative"))
+        ) %>%
+        pivot_wider(names_from = nointer_sign, values_from = n_countries) %>%
+        arrange(inter_sign) %>%
+        mutate(inter_sign = paste("inter:", inter_sign)) %>%
+        column_to_rownames("inter_sign") %>%
+        select(`positive`, `negative`) # Explicitly order columns
+    colnames(table_neg) <- paste("nointer:", colnames(table_neg))
+
+    table_pos <- scenario_counts %>%
+        filter(diff_sign == "positive") %>%
+        select(-diff_sign) %>%
+        mutate(
+            inter_sign = factor(inter_sign, levels = c("positive", "negative")),
+            nointer_sign = factor(nointer_sign, levels = c("positive", "negative"))
+        ) %>%
+        pivot_wider(names_from = nointer_sign, values_from = n_countries) %>%
+        arrange(inter_sign) %>%
+        mutate(inter_sign = paste("inter:", inter_sign)) %>%
+        column_to_rownames("inter_sign") %>%
+        select(`positive`, `negative`) # Explicitly order columns
+    colnames(table_pos) <- paste("nointer:", colnames(table_pos))
+
+    # Create clean combined output
+    combined_output <- capture.output({
+        cat("DIFF_SIGN = NEGATIVE (Interaction Effect makes GDP impact WORSE)\n")
+        cat(strrep("=", 55))
+        print(kable(table_neg, format = "simple"))
+
+        cat("\n\nDIFF_SIGN = POSITIVE (Interaction Effect makes GDP impact BETTER)\n")
+        cat(strrep("=", 55))
+        print(kable(table_pos, format = "simple"))
+    })
+
+    return(combined_output)
+}
 
 ## plotting functions ## =======================================================
 plot_png <- function(p, fn, width=5.5, height=4, ppi=300){

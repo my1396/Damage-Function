@@ -6,6 +6,7 @@
 *.RDS
 *.xlsx
 *.html
+.vscode/
 
 # ignore data
 data/population/
@@ -14,4 +15,7 @@ data/cntry_code.csv
 data/historical_climate
 figures/
 *.dta
-6.5_Fig3.R
+6-5_Fig3.R
+
+# escape Stata files for now
+S* 
