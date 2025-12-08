@@ -1,5 +1,6 @@
 ## This script bootstraps historical observational datasets to gain 
 ## a distribution of parameter estimates.
+## Static model
 
 library(broom)
 library(plm) 

@@ -85,7 +85,7 @@ predict_response_interact <- function(beta_hat){
     return (plot_df)
 }
 
-CC_meta <- readr::read_csv("data/region_category.csv")
+CC_meta <- readr::read_csv("data/region_category.csv", show_col_types = FALSE)
 CC_meta[,1:4]
 add_country_name <- function(x, col="ISO_C3"){
     # add country names matching by `col`
@@ -93,6 +93,21 @@ add_country_name <- function(x, col="ISO_C3"){
     # `col`: matching column, default to "ISO_C3"
     x %>% left_join(CC_meta[,c(1,3)], by=setNames("ISO_C3", col) ) 
 }
+
+# preprocess raw coef: divide by AR lag polynomial
+lag_poly_solution <- function(rho1, beta0, beta1, n_terms = 5) {
+    # Calculate polynomial division psi(L) = rho(L)^(-1) * beta(L)
+    # rho(L) = 1 - rho1*L
+    # beta(L) = beta0 + beta1*L
+    rho_inv <- sapply(0:n_terms, function(k) rho1^k)
+    psi <- beta0 * rho_inv
+    psi <- psi + beta1 * c(0, rho_inv[1:n_terms])
+
+    # Return coefficients: psi0 + psi1*L + psi2*L^2 + ...
+    names(psi) <- paste0("L^", 0:n_terms)
+    return(psi)
+}
+
 
 ## format outputs ## ===========================================================
 tidy_coeftest <- function(coef_test, nrow=10){

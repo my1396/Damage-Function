@@ -1,6 +1,9 @@
 # Static model: Difference in CC impacts on GDP with and without interactive terms
 # cross tables of scenario counts in 2100
 
+source("fun_script.R")
+library(tidyverse)
+
 ssp <- "SSP585"
 no_inter <- read_csv(sprintf("data/%s/country_all_impact_nointer_250106.csv", ssp))
 no_inter$`2100.deltaAll`
@@ -12,6 +15,7 @@ diff_df <- inter[, c(1, 81)] %>%
     left_join(no_inter[, c(1, 81)], by = "ISO_C3", suffix = c(".Inter", ".noInter"))
 diff_df <- diff_df %>% mutate(diff = .[[2]] - .[[3]])
 diff_df %>% nrow()
+diff_df %>% head(5)
 diff_df[, -1] %>% summary()
 diff_df %>% filter(ISO_C3 == "MNG")
 

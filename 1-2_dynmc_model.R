@@ -18,6 +18,8 @@ library(tidyverse)
 library(plm)
 library(lmtest)
 library(broom)
+library(pdynmc)
+library(modelsummary)
 
 
 ## data processing ##
@@ -30,7 +32,7 @@ Pdata <- Pdata %>%
   mutate(
       tmp_pre = tmp * pre, 
       tmp2_pre = tmp2 * pre, 
-      pre2_tmp = pre2 *tmp, 
+      pre2_tmp = pre2 * tmp, 
       tmp2_pre2 = tmp2 * pre2
       )
 Pdata %>%
@@ -65,11 +67,6 @@ regressor_t
 ## Burke baseline ##
 regressor_v0 <- c("tmp", "tmp2", "pre", "pre2")
 
-Pdata %>%
-  select("iso", "year", "logD_gdp", regressor_v0)
-Pdata %>%
-  mutate(logD_gdp_1 = lag(logD_gdp)) %>%
-  select("iso", "year", "logD_gdp", "logD_gdp_1")
 reg_f.gdp <- formula(paste("logD_gdp ~ ", paste(c(regressor_v0,
   regressor_t), collapse = " + ")))
 ml.gdp <- plm(reg_f.gdp, data = Pdata, index = c("iso", "year"),
@@ -96,17 +93,7 @@ tidy_coeftest(coef.gdp.interact, 10)
 ## Dynamic ---------------------------------------------------------------------
 ## Lagged dependent ##
 ## -------------------------------------------------------------------------- ##
-GDPdata <- read_csv("data/cntry_ann_climate_gdpKD_1961to2019.csv",
-  na = "..")
-GDPdata %>%
-  colnames()
 
-Pdata %>%
-  colnames()
-Pdata <- Pdata %>%
-  left_join(GDPdata[, c("ISO_C3", "year", "NY.GDP.PCAP.KD")],
-    by = c(iso = "ISO_C3", year = "year")) %>%
-  rename(gdp = "NY.GDP.PCAP.KD")
 
 # remove NA values
 Pdata_nomissing <- Pdata %>%
@@ -116,27 +103,21 @@ Pdata_nomissing %>%
 Pdata_nomissing %>%
   head()
 
-form.AR1 <- dynformula(reg_f.gdp.interact, c(list(1), as.list(rep(0,
-  8 + N.obs * 2))))
-
-
 ### no time trend --------------------------------------------------------------
 reg_f.gdp.interact.AR1 <- pgmm(logD_gdp ~ lag(logD_gdp) + tmp +
   tmp2 + pre + pre2 + tmp_pre + tmp2_pre + pre2_tmp + tmp2_pre2 |
   lag(logD_gdp, 2:3), data = Pdata_nomissing, index = c("iso",
   "year"), effect = "twoways", model = "onestep", collapse = TRUE)
 summary(reg_f.gdp.interact.AR1)
-summary(reg_f.gdp.interact.AR1) %>%
-  str()
 summary(reg_f.gdp.interact.AR1)$coef
 
 # summary(reg_f.gdp.interact.AR1)$vcov
-reg_f.gdp.interact.AR1$W[[3]]
-reg_f.gdp.interact.AR1$W[[3]][, c(-1, -2)] %>%
-  ncol()
+# reg_f.gdp.interact.AR1$W[[3]]
+# reg_f.gdp.interact.AR1$W[[3]][, c(-1, -2)] %>%
+#   ncol()
 
 # with pdynmc
-library(pdynmc)
+# lagged depend. variable
 reg_f.gdp.interact.AR1_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -157,6 +138,7 @@ summary(reg_f.gdp.interact.AR1_pdynmc)$coef %>%
   rownames()
 
 # ARDL(1,1)
+# lagged depend. + indep. variable
 reg_f.gdp.interact.ARDL1_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -179,6 +161,7 @@ summary(reg_f.gdp.interact.ARDL1_pdynmc)$coef %>%
     rownames()
 
 ### linear time trend ----------------------------------------------------------
+# lagged depend. variable
 reg_f.gdp.interact.AR1_time_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -189,7 +172,7 @@ reg_f.gdp.interact.AR1_time_pdynmc <- pdynmc(
         "tmp", "tmp2", "pre", "pre2", 
         "tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2",
         colnames(ttrend)),
-    lagTerms.reg.fur = rep(0, 148), 
+    lagTerms.reg.fur = rep(0, 122+8), 
     include.dum = TRUE, dum.diff = TRUE,
     dum.lev = FALSE, varname.dum = "year", w.mat = "iid.err",
     std.err = "corrected", estimation = "onestep", opt.meth = "none"
@@ -198,7 +181,7 @@ summary(reg_f.gdp.interact.AR1_time_pdynmc)
 summary(reg_f.gdp.interact.AR1_time_pdynmc)$coef %>%
     head(9)
 
-
+# lagged depend. + indep. variable
 reg_f.gdp.interact.ARDL1_time_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -209,7 +192,7 @@ reg_f.gdp.interact.ARDL1_time_pdynmc <- pdynmc(
         "tmp", "tmp2", "pre", "pre2", 
         "tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2",
         colnames(ttrend)),
-    lagTerms.reg.fur = c(rep(1, 8), rep(0, 140)), 
+    lagTerms.reg.fur = c(rep(1, 8), rep(0, 122)), 
     include.dum = TRUE, dum.diff = TRUE,
     dum.lev = FALSE, varname.dum = "year", w.mat = "iid.err",
     std.err = "corrected", estimation = "onestep", opt.meth = "none"
@@ -219,6 +202,7 @@ summary(reg_f.gdp.interact.ARDL1_time_pdynmc)$coef %>%
     head(17)
 
 ### quadratic time trend -------------------------------------------------------
+# lagged depend. variable
 reg_f.gdp.interact.AR1_time2_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -229,7 +213,7 @@ reg_f.gdp.interact.AR1_time2_pdynmc <- pdynmc(
         "tmp", "tmp2", "pre", "pre2", 
         "tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2",
         colnames(ttrend), colnames(ttrend2)),
-    lagTerms.reg.fur = rep(0, 288), 
+    lagTerms.reg.fur = rep(0, 122*2+8), 
     include.dum = TRUE, dum.diff = TRUE,
     dum.lev = FALSE, varname.dum = "year", w.mat = "iid.err",
     std.err = "corrected", estimation = "onestep", opt.meth = "none"
@@ -238,6 +222,7 @@ summary(reg_f.gdp.interact.AR1_time2_pdynmc)
 summary(reg_f.gdp.interact.AR1_time2_pdynmc)$coef %>%
     head(9)
 
+# lagged depend. + indep. variable
 reg_f.gdp.interact.ARDL1_time2_pdynmc <- pdynmc(
     dat = Pdata_nomissing,
     varname.i = "iso", varname.t = "year", use.mc.diff = TRUE,
@@ -248,7 +233,7 @@ reg_f.gdp.interact.ARDL1_time2_pdynmc <- pdynmc(
         "tmp", "tmp2", "pre", "pre2", 
         "tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2",
         colnames(ttrend), colnames(ttrend2)),
-    lagTerms.reg.fur = c(rep(1, 8), rep(0, 280)), 
+    lagTerms.reg.fur = c(rep(1, 8), rep(0, 122*2)), 
     include.dum = TRUE, dum.diff = TRUE,
     dum.lev = FALSE, varname.dum = "year", w.mat = "iid.err",
     std.err = "corrected", estimation = "onestep", opt.meth = "none"
@@ -259,8 +244,6 @@ summary(reg_f.gdp.interact.ARDL1_time2_pdynmc)$coef %>%
 
 ## -------------------------------------------------------------------------- ##
 # Model summary ----------------------------------------------------------------
-
-library(modelsummary)
 
 # static
 M0 <- tidy_coeftest(coef.gdp.interact, 8)
@@ -358,8 +341,8 @@ class(M5) <- "modelsummary_list"
 class(M6) <- "modelsummary_list"
 class(M7) <- "modelsummary_list"
 
-get_estimates(M5)
-modelsummary(M5)
+get_estimates(M1)
+modelsummary(M0, stars = TRUE)
 
 # created named list
 models <- list()
@@ -392,7 +375,8 @@ modelsummary(models[-2], stars = TRUE, fmt = 6,
 AFE_dynamic <- map(list(M0, M1, M2, M3, M4, M5, M6, M7), 1) %>% 
     bind_rows(.id = "model")
 AFE_dynamic <- AFE_dynamic %>% mutate(pval.symbol = addPval.symbol(p.value))
-f_name <- "data/AFE_dynmc.csv"
+date <- "250811" # file suffix to indicate version
+f_name <- sprintf("data/AFE_dynmc_%s.csv", date)
 # write_csv(AFE_dynamic, f_name)
 
 
