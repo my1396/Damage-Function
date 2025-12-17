@@ -1,17 +1,22 @@
 use "data/GDP_reg_panelData.dta", clear
 
 //# Arellano–Bond Estimator
+// robust SE -> Use this one
 xi: xtabond logd_gdp tmp tmp2 pre pre2 ///
 	tmp_pre tmp2_pre tmp_pre2 tmp2_pre2 ///
 	i.year i.iso|year_id i.iso|year_id2, ///
 	lags(1) vce(robust) noconstant
+
+estimates store dynamic_model_xtabond
 
 xi: xtabond logd_gdp tmp tmp2 pre pre2 ///
 	tmp_pre tmp2_pre tmp_pre2 tmp2_pre2 ///
 	i.year i.iso|year_id i.iso|year_id2, ///
 	lags(1) vce(gmm) noconstant
 
+
 estat sargan
+estat abond, artests(4)
 
 // coef vector
 matrix b = e(b)
@@ -23,7 +28,7 @@ matrix list b9
 
 matrix V = e(V)
 matrix list V
-
+ 
 mat2txt, matrix(b) saving(coef_vector.txt) replace
 mat2txt, matrix(V) saving(variance_matrix.txt) replace
 

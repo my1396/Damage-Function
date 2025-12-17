@@ -90,6 +90,8 @@ pct_impact_country <- read_csv(f_name)
 colnames(pct_impact_country)
 legend_low <- -1
 legend_high <- 1
+c <- 10 * .Machine$double.eps
+library(scales)
 plot_data <- pct_impact_country %>% 
     select(1, 81) %>% 
     mutate(V80_c = squish(`2100.deltaAll`, range = c(legend_low+c, legend_high) ) ) # set out of boundary values to limits
@@ -99,6 +101,8 @@ world.map <- ne_countries(scale = "medium", returnclass = "sf")
 sum(plot_data$ISO_C3 %ni% world.map$iso_a3_eh)
 world.map <- world.map %>% 
     left_join(plot_data, by=c("iso_a3_eh"="ISO_C3"))
+world.map[c("iso_a3_eh", "V80_c", "name_en", "name_zh")] %>%
+    filter(name_en == "Greenland")
 # world.map
 cold <- colorRampPalette(c("#000033","#00007F", "#7AACED", "white"))(7) # from -7
 warm <- c("#FFD4D4", "#FFB2B2", "#FF9090", "#FF6D6D", "#FF4B4B", "#FF2A2A")
@@ -108,15 +112,22 @@ title <- sprintf("Climate change impacts until 2100, %s", ssp)
 unit <- "%"
 step <- 0.2
 
-p_map <- ggplot(data = world.map %>% filter(continent!="Antarctica") ) +
+p_map <- ggplot(
+        data = world.map %>% 
+            filter((continent != "Antarctica") &
+                   (name_en != "Greenland"))
+    ) +
     geom_sf(aes(fill=V80_c), colour='gray50', lwd=0.2 ) +
-    scale_fill_stepsn(limits = c(legend_low, legend_high), 
-                      breaks = c(legend_low-c, seq(legend_low+step, legend_high-step, step), legend_high+c ), 
-                      labels = function(x) {sprintf("%.1f", x*100)},
-                      show.limits = TRUE, 
-                      right = FALSE, # include right bin, (low, up]
-                      colours = myColors,
-                      name = TeX(unit)
+    scale_fill_stepsn(
+        limits = c(legend_low-c, legend_high+c), 
+        breaks = c(legend_low-c, 
+                   seq(legend_low+step, legend_high-step, step),
+                   legend_high+c ), 
+        labels = function(x) {sprintf("%.1f", x*100)},
+        show.limits = TRUE, 
+        right = FALSE, # include right bin, (low, up]
+        colours = myColors,
+        name = TeX(unit)
     ) +
     coord_sf(datum = NA) +
     guides(pattern = guide_legend(title=element_blank()) ) +
@@ -124,7 +135,8 @@ p_map <- ggplot(data = world.map %>% filter(continent!="Antarctica") ) +
     theme_minimal() +
     theme(plot.title = element_text(hjust=0.1),
           legend.title = element_text(hjust=0.85),
-          legend.position = c(0.1,0.3))
+          legend.position = c(0.1,0.3)
+          )
 p_map
 
 # x11()

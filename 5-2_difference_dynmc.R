@@ -16,7 +16,8 @@ model_id <- "AFE_ARDL"
 model_id <- "AFE_ARDL-time1"
 model_id <- "AFE_ARDL-time2"
 
-model_id <- "stata_AFE_AR1-time2"
+model_id <- "stata_AFE_AR1-time2" # xtabond
+model_id <- "stata_AFE_AR1-time2_xtabond2" # xtabond2
 
 # choose ssp scenario: one of "SSP126", "SSP245", "SSP370", "SSP585"
 # ssp <- "SSP126"
@@ -24,6 +25,7 @@ model_id <- "stata_AFE_AR1-time2"
 # ssp <- "SSP370"
 ssp <- "SSP585"
 date <- "251208"
+date <- "251216"
 
 f_name <- sprintf("data/%1$s/%1$s_country_all_impact_nointer_%2$s_dynmc_%3$s.csv", ssp, model_id, date)
 no_inter <- read_csv(f_name)

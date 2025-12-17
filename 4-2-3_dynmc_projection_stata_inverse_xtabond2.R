@@ -1,23 +1,13 @@
-## Project climate change impacts based on Stata dynamic model results
-## Stata model: xtabond
-## Inverting the AR(1). 
-## Ref: Kahn (2021), "Long-term macroeconomic effects of climate change: A cross-country analysis", Energy Economics
-## Fig.5 shows the MA coefficients decay pattern
-## Fixed h-step ahead forecast error. NO truncation is applied. All available lags up to h are used.
-## Update: 2025-12-08 (V2)
-
-## This script performs:
-##   1. Invert the AR(1) to get MA forecast representation;
-##   2. Forecast eta (economic impacts);
-##   3. Calculate cumulative GDP impacts with and without climate change; 
-
+## Project CC impacts with stata xtabond2 estimates
+## Date: 2025-12-16
 
 library(tidyverse)
 library(data.table)
-source("fun_script.R")
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-f_name <- "data/stata/coef_vector.txt"
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+source("fun_script.R")
+
+f_name <- "data/stata/xtabond2_coef_vector.txt"
 beta_hat <- read_delim(f_name, delim = "\t")
 
 beta_hat <- t(beta_hat)
@@ -25,15 +15,13 @@ beta_hat <- beta_hat %>% tail(-1)
 beta_hat <- beta_hat %>% head(-1)
 beta_hat %>% tail()
 beta_hat %>% str()
-beta_hat <- beta_hat %>% 
+beta_hat <- beta_hat %>%
     as_tibble(rownames = "variable")
 colnames(beta_hat)[2] <- "estimate"
-beta_hat <- beta_hat %>% 
+beta_hat <- beta_hat %>%
     mutate(estimate = as.numeric(estimate))
-# coef estimates preview
-beta_hat %>% data.table()
+beta_hat
 
-beta_hat$estimate[1:9]
 # if exists distributed lag (DL) terms
 DL <- FALSE
 
@@ -45,11 +33,11 @@ mean_lag <- numeric(length(var_list))
 plot <- TRUE # whether to plot MA coefficients
 # plot <- FALSE
 
-model_id <- "stata_AFE_AR1-time2"
-date <- "251208"
+model_id <- "stata_AFE_AR1-time2_xtabond2"
+date <- "251216"
 j <- 1
 
-for (j in 1:8){
+for (j in 1:8) {
     # get MA coefficients and plot bar plot
     if (j == 1) {
         cat(sprintf("Plot: %s \n", plot))
@@ -64,15 +52,15 @@ for (j in 1:8){
         psi_coef <- lag_poly_solution(rho1 = rho, beta0 = beta_j[1], beta1 = beta_j[2], n_terms = 20)
     } else {
         # without distributed lag terms
-        idx  <- j + 1
+        idx <- j + 1
         beta_j <- beta_hat$estimate[idx]
         psi_coef <- lag_poly_solution(rho1 = rho, beta0 = beta_j, beta1 = 0, n_terms = 20)
     }
     psi_coef
     psi_df[[var]] <- psi_coef
-    
-    mean_lag[j] <- sum(0:20 * psi_coef)/sum(psi_coef)
-    
+
+    mean_lag[j] <- sum(0:20 * psi_coef) / sum(psi_coef)
+
     # plot lag polynomial coefficients, psi0, psi1, ..., psi20
     if (plot) {
         title <- sprintf("Lag Polynomial Coefficients. Regressor: %s", var)
@@ -86,10 +74,12 @@ for (j in 1:8){
         )
         p <- ggplot(plot_df, aes(x = lag, y = coef)) +
             geom_bar(stat = "identity", fill = "steelblue") +
-            labs(x = "Lag", 
-                 y = expression(psi[L]), 
-                 title = title,
-                 subtitle = par)
+            labs(
+                x = "Lag",
+                y = expression(psi[L]),
+                title = title,
+                subtitle = par
+            )
         p
         f_name <- sprintf("figures/lag_polynomial/%3$s/%1$s_dynamic_lag_poly_%2$s_%3$s.png", model_id, var, date)
         f_name
@@ -97,8 +87,8 @@ for (j in 1:8){
     }
 }
 
-psi_df <- do.call(cbind, psi_df) %>% 
-    as.data.frame() %>% 
+psi_df <- do.call(cbind, psi_df) %>%
+    as.data.frame() %>%
     as_tibble(rownames = "lag")
 psi_df %>% print(n = Inf)
 f_name <- sprintf("data/%s_dynmc_lag_poly_%s.csv", model_id, date)
@@ -173,15 +163,16 @@ h_max <- 80
 psi_all <- lag_poly_solution(rho1 = rho, beta0 = 1, beta1 = 0, n_terms = h_max)
 
 # Extract beta coefficients for regressors (excluding AR coefficient)
-beta_vec <- beta_hat$estimate[2:9]  # 8 regressors
+beta_vec <- beta_hat$estimate[2:9] # 8 regressors
 names(beta_vec) <- c("tmp", "tmp2", "pre", "pre2", "tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2")
 
-interactive_terms <- TRUE
+# interactive_terms <- TRUE
 interactive_terms <- FALSE
 if (!interactive_terms) {
     # zero out interaction term coefficients
     beta_vec[c("tmp_pre", "tmp2_pre", "pre2_tmp", "tmp2_pre2")] <- 0
 }
+beta_vec
 
 # Initialize forecast matrix: countries x forecast horizons
 countries <- unique(regressor_df$ISO_C3)
@@ -196,45 +187,47 @@ Delta_all_df <- tibble(
 # ctry <- countries[1]  # for testing
 for (ctry in countries) {
     # Extract regressor data for this country
-    ctry_data <- regressor_df %>% 
+    ctry_data <- regressor_df %>%
         filter(ISO_C3 == ctry) %>%
         arrange(year)
-    
+
     # Get regressor matrix (years x 8 variables)
     X_matrix <- ctry_data %>%
         select(tmp, tmp2, pre, pre2, tmp_pre, tmp2_pre, pre2_tmp, tmp2_pre2) %>%
         as.matrix()
-    
+
     # Calculate h-step forecasts
     for (h in 1:h_max) {
         # y_{t+h} = sum_{j=0}^h psi_j * (beta' * X_{t+h-j})
         forecast_h <- 0
-        
+
         for (j in 0:h) {
             # Time index for X_{t+h-j}
-            time_idx <- h - j + 1  # +1 because R is 1-indexed
-            
+            time_idx <- h - j + 1 # +1 because R is 1-indexed
+
             if (time_idx >= 1 && time_idx <= nrow(X_matrix)) {
                 # X_{t+h-j}' * beta
                 X_contribution <- sum(X_matrix[time_idx, ] * beta_vec)
-                
+
                 # Multiply by MA coefficient psi_j
                 forecast_h <- forecast_h + psi_all[j + 1] * X_contribution
             }
         }
-        
+
         # Store forecast
         Delta_all_df$y_forecast[Delta_all_df$ISO_C3 == ctry & Delta_all_df$horizon == h] <- forecast_h
     } # end of h-loop
-    
+
     # Debug: print forecasts for this country
     # Delta_all_df %>%
     #     filter(ISO_C3 == ctry) %>%
     #     print(n = Inf)
-    
+
     if (match(ctry, countries) %% 20 == 0) {
-        cat(sprintf("Completed forecasts for %d/%d countries\n", 
-                    match(ctry, countries), n_countries))
+        cat(sprintf(
+            "Completed forecasts for %d/%d countries\n",
+            match(ctry, countries), n_countries
+        ))
     }
 }
 
@@ -249,7 +242,7 @@ Delta_all_df %>%
     print(n = 20)
 
 # Reshape to wide format: each year as a separate column
-Delta_all_df <- Delta_all_df %>% 
+Delta_all_df <- Delta_all_df %>%
     pivot_wider(
         names_from = "horizon",
         values_from = "y_forecast"
@@ -302,6 +295,7 @@ CC_country <- apply(
     function(x) cumprod(replace(x, is.na(x), 1))
 ) %>%
     t()
+
 
 # cumulative effects
 pct_impact_country <- CC_country / baseline_country - 1

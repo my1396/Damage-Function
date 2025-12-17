@@ -167,10 +167,10 @@ format_cross_tab <- function(categorized_df) {
         ) %>%
         pivot_wider(names_from = nointer_sign, values_from = n_countries) %>%
         arrange(inter_sign) %>%
-        mutate(inter_sign = paste("inter:", inter_sign)) %>%
+        mutate(inter_sign = paste("All:", inter_sign)) %>%
         column_to_rownames("inter_sign") %>%
         select(`positive`, `negative`) # Explicitly order columns
-    colnames(table_neg) <- paste("nointer:", colnames(table_neg))
+    colnames(table_neg) <- paste("Dir:", colnames(table_neg))
 
     table_pos <- scenario_counts %>%
         filter(diff_sign == "positive") %>%
@@ -181,20 +181,21 @@ format_cross_tab <- function(categorized_df) {
         ) %>%
         pivot_wider(names_from = nointer_sign, values_from = n_countries) %>%
         arrange(inter_sign) %>%
-        mutate(inter_sign = paste("inter:", inter_sign)) %>%
+        mutate(inter_sign = paste("All:", inter_sign)) %>%
         column_to_rownames("inter_sign") %>%
         select(`positive`, `negative`) # Explicitly order columns
-    colnames(table_pos) <- paste("nointer:", colnames(table_pos))
+    colnames(table_pos) <- paste("Dir:", colnames(table_pos))
 
     # Create clean combined output
     combined_output <- capture.output({
-        cat("DIFF_SIGN = NEGATIVE (Interaction Effect makes GDP impact WORSE)\n")
-        cat(strrep("=", 55))
-        print(kable(table_neg, format = "simple"))
 
-        cat("\n\nDIFF_SIGN = POSITIVE (Interaction Effect makes GDP impact BETTER)\n")
-        cat(strrep("=", 55))
+        cat("DIFF_SIGN = POSITIVE (Interaction Effect makes GDP impact BETTER)\n")
+        cat(strrep("=", 46))
         print(kable(table_pos, format = "simple"))
+        
+        cat("\n\nDIFF_SIGN = NEGATIVE (Interaction Effect makes GDP impact WORSE)\n")
+        cat(strrep("=", 46))
+        print(kable(table_neg, format = "simple"))
     })
 
     return(combined_output)
