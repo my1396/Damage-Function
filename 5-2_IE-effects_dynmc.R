@@ -1,10 +1,14 @@
 # Dynamic model: Difference in CC impacts on GDP under alternative specifications:
 #       - with and 
 #       - without interactive terms
-# cross tables of scenario counts in 2100
+# Cross tables of IE-effects in 2100
 
 library(knitr)
 library(tidyverse)
+library(data.table)
+
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+source("fun_script.R")
 
 country_name <- read_csv("data/region_category.csv")
 
@@ -24,7 +28,7 @@ model_id <- "stata_AFE_AR1-time2_xtabond2" # xtabond2
 # ssp <- "SSP245"
 # ssp <- "SSP370"
 ssp <- "SSP585"
-date <- "251208"
+# date <- "251208"
 date <- "251216"
 
 f_name <- sprintf("data/%1$s/%1$s_country_all_impact_nointer_%2$s_dynmc_%3$s.csv", ssp, model_id, date)
@@ -43,11 +47,18 @@ diff_df <- inter[, c(1, 81)] %>%
 diff_df <- diff_df %>% mutate(diff = .[[2]] - .[[3]])
 diff_df %>% nrow()
 diff_df %>% head()
-diff_df[,-1] %>% summary()
+diff_df[, -1] %>% summary()
 
+# Save to file
 f_name <- sprintf("data/%1$s/%1$s_country_all_impact_diff_with-without-IE_%2$s_dynmc_%3$s.csv", ssp, model_id, date)
 f_name
 # write_csv(diff_df, f_name)
+
+
+# Summary statistics of IE-effects ---------------------------------------------
+diff_df <- read_csv(f_name)
+diff_df[, -1] %>% summary()
+
 
 # Scenario count table ---------------------------------------------------------
 # Categorize each value as positive or negative
@@ -66,11 +77,13 @@ categorized_df <- categorized_df %>%
         by = "ISO_C3"
     )
 
+# frequency table of all possible sign combinations
 categorized_df %>% 
     select(ends_with("_sign")) %>% 
     count()
 
-# investigate the group with positive diff and negative inter & nointer 
+# Investigate the group with positive diff and negative inter & nointer 
+# join region info
 categorized_df %>%
     filter(
         diff_sign == "positive" &
@@ -78,9 +91,10 @@ categorized_df %>%
         nointer_sign == "negative"
     ) %>% 
     arrange(region) %>%
-    print(n = Inf)
+    data.table() %>% 
+    print(topn = 5)
 
-# region composition of the group
+# tabulate region composition of the group
 categorized_df %>% 
     filter(
         diff_sign == "positive" & 
@@ -94,10 +108,13 @@ categorized_df %>%
 cross_tab_formatted <- format_cross_tab(categorized_df)
 cat("\n", paste(cross_tab_formatted, collapse = "\n"), "\n")
 
+# For percentages
+cross_tab_formatted_pct <- format_cross_tab(categorized_df, show_pct = TRUE)
+cat("\n", paste(cross_tab_formatted_pct, collapse = "\n"), "\n")
+
+
 # Save to file for even cleaner viewing
 f_name <- sprintf("data/%1$s/%1$s_country_all_impact_diff_scenario-count_%2$s_dynmc_%3$s.txt", ssp, model_id, date)
 f_name
-writeLines(cross_tab_formatted, f_name)
-
-
+# writeLines(cross_tab_formatted, f_name)
 

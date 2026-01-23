@@ -17,9 +17,10 @@ xtabond2 logd_gdp L.logd_gdp tmp tmp2 pre pre2 ///
 // Store estimates
 estimates store dynamic_model_xtabond2
 
+estimates table dynamic_model_xtabond2, keep(L.logd_gdp tmp tmp2 pre pre2 tmp_pre tmp2_pre tmp_pre2 tmp2_pre2) star(.1 .05 .01)
 
 
-//# with Distributed Lagg terms
+//# with Distributed Lag terms
 xtabond2 logd_gdp L.logd_gdp tmp tmp2 pre pre2 ///
     tmp_pre tmp2_pre tmp_pre2 tmp2_pre2 ///
 	L.tmp L.tmp2 L.pre L.pre2 ///

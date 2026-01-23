@@ -27,7 +27,7 @@ estimates store dynamic_model_xtabond
 
 
 // Compare climate coefficients
-estimates table dynamic_model_xtabond dynamic_model_xtabond2, keep(L.logd_gdp tmp tmp2 pre pre2 tmp_pre tmp2_pre tmp_pre2 tmp2_pre2) star
+estimates table dynamic_model_xtabond dynamic_model_xtabond2, keep(L.logd_gdp tmp tmp2 pre pre2 tmp_pre tmp2_pre tmp_pre2 tmp2_pre2) star(.1 .05 .01)
 
 
 //# Save to csv, side-by-side comparison

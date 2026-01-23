@@ -1,5 +1,6 @@
 ## Project economic impacts based on Stata dynamic models results
-## Step-by-step prediction
+## Step-by-step prediction [NOT implemented yet]
+## Evaluate necessity, see whether it makes sense and if the results differ from those of reversing lag polynomial
 
 f_name <- "data/stata/coef_vector.txt"
 beta_hat <- read_delim("data/stata/coef_vector.txt",

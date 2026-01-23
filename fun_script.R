@@ -2,7 +2,7 @@
 '%ni%' <- Negate('%in%')
 between <- dplyr::between
 select <- dplyr::select
-count <- plyr::count
+count <- plyr::count # conflict with dplyr::count
 summarise <- dplyr::summarise
 rename <- dplyr::rename
 TeX <- latex2exp::TeX
@@ -138,11 +138,12 @@ get_latex_tible <- function(coef_test, nrow=4){
           hline.after = NULL, include.rownames=FALSE)
 }
 
-format_cross_tab <- function(categorized_df) {
+format_cross_tab <- function(categorized_df, show_pct = FALSE) {
     # Format cross tabulation table for better readability
     # Used to summarize scenario counts based on signs of differences
     #
     # @param categorized_df: a data frame contains columns diff_sign, inter_sign, nointer_sign
+    # @param show_pct: if TRUE, show percentages instead of counts
     # @output: formatted table, 2 X 2 X 2.
 
     all_combinations <- expand.grid(
@@ -157,6 +158,9 @@ format_cross_tab <- function(categorized_df) {
         right_join(all_combinations, by = c("diff_sign", "inter_sign", "nointer_sign")) %>%
         mutate(n_countries = replace_na(n_countries, 0)) %>%
         arrange(diff_sign, inter_sign, nointer_sign)
+    
+    # Calculate total for percentage
+    total_n <- nrow(categorized_df)
 
     table_neg <- scenario_counts %>%
         filter(diff_sign == "negative") %>%
@@ -170,6 +174,13 @@ format_cross_tab <- function(categorized_df) {
         mutate(inter_sign = paste("All:", inter_sign)) %>%
         column_to_rownames("inter_sign") %>%
         select(`positive`, `negative`) # Explicitly order columns
+    
+    # Convert to percentage if requested
+    if (show_pct) {
+        table_neg <- table_neg %>%
+            mutate(across(everything(), ~ sprintf("%.1f%%", . / total_n * 100)))
+    }
+    
     colnames(table_neg) <- paste("Dir:", colnames(table_neg))
 
     table_pos <- scenario_counts %>%
@@ -184,6 +195,13 @@ format_cross_tab <- function(categorized_df) {
         mutate(inter_sign = paste("All:", inter_sign)) %>%
         column_to_rownames("inter_sign") %>%
         select(`positive`, `negative`) # Explicitly order columns
+    
+    # Convert to percentage if requested
+    if (show_pct) {
+        table_pos <- table_pos %>%
+            mutate(across(everything(), ~ sprintf("%.1f%%", . / total_n * 100)))
+    }
+    
     colnames(table_pos) <- paste("Dir:", colnames(table_pos))
 
     # Create clean combined output
@@ -208,13 +226,14 @@ plot_png <- function(p, fn, width=5.5, height=4, ppi=300){
     print (p)
     dev.off()
 }
-my_theme <- theme(legend.title = element_blank(),
-                  legend.position = c(.9,.9),
-                  legend.text = element_text(size=12),
-                  axis.text = element_text(size=rel(1.2)),
-                  axis.title = element_text(size=rel(1.2)),
-                  # plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
-                  )
+my_theme <- theme(
+    legend.title = element_blank(),
+    legend.position = c(.9,.9),
+    legend.text = element_text(size=12),
+    axis.text = element_text(size=rel(1.2)),
+    axis.title = element_text(size=rel(1.2)),
+    # plot.margin = margin(t=7, b=7, r=12, l=7, unit="pt")
+    )
 
 base_tmp <- ggplot() +
     xlim(0, 30) 

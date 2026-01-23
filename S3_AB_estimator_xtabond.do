@@ -29,8 +29,8 @@ matrix list b9
 matrix V = e(V)
 matrix list V
  
-mat2txt, matrix(b) saving(coef_vector.txt) replace
-mat2txt, matrix(V) saving(variance_matrix.txt) replace
+mat2txt, matrix(b) saving("data/stata/coef_vector.txt") replace
+mat2txt, matrix(V) saving("data/stata/variance_matrix.txt") replace
 
 * Estimation table with stars
 estimates table, star keep(L1.logd_gdp tmp tmp2 pre pre2 tmp_pre tmp2_pre tmp_pre2 tmp2_pre2)

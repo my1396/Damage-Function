@@ -1,4 +1,11 @@
 ## Project CC impacts with stata xtabond2 estimates
+## Input: coefficient estimates from stata xtabond2 dynamic panel model
+## Method: Inverting the AR(1).
+## Output: 
+##      - country-level projected CC impacts on GDP growth rate per year (eta)
+##      - country-level projected cumulative CC impacts per year
+## "interactive_terms" (BOOL): whether to include interactive terms in the projection
+## Depending on interactive_terms, the output files are saved accordingly.
 ## Date: 2025-12-16
 
 library(tidyverse)
@@ -310,6 +317,6 @@ pct_impact_country[1:5, c(1, 72:81)]
 f_name <- ifelse(interactive_terms,
     sprintf("data/%1$s/%1$s_country_all_impact_inter_%2$s_dynmc_%3$s.csv", ssp, model_id, date),
     sprintf("data/%1$s/%1$s_country_all_impact_nointer_%2$s_dynmc_%3$s.csv", ssp, model_id, date)
-)
+    )
 f_name
 # write_csv(pct_impact_country, f_name)

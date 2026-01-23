@@ -1,4 +1,4 @@
-## Plot histograms of cumulative impacts in 2100 under various model specifications:
+## Plot histograms of country-level cumulative impacts in 2100 under various model specifications:
 ##    Case 1: with interactive terms
 ##    Case 2: without interactive terms
 ##    Case 3: difference between the two cases

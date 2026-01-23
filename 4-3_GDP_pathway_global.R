@@ -1,10 +1,14 @@
-# Global GDP pathways in Fig 2 (a)
+# Global GDP pathways
 
-f_name <- paste0(data_dir, "population/SSP_Population_weight.csv") 
-f_name
+library(tidyverse)
+f_name <- "data/SSP_Population_weight.csv"
 pop_weight_df <- read_csv(f_name)
 
-ssp <- "SSP126"
+# ssp <- "SSP126"
+# ssp <- "SSP245"
+# ssp <- "SSP370"
+ssp <- "SSP585"
+
 ## Load population weights
 # population distribution are more even, not densely concentrated in China or India any more
 # SSP585: 5.48 Celsius global warming by 2100, weighted by pop in 2100
@@ -40,7 +44,7 @@ gdp_CC <- Delta_tmp_df[,2:81] + gdp_nCC
 Delta_gdp_cc <- gdp_CC %>% 
     as_tibble() %>% 
     mutate(ISO_C3 = Delta_tmp_df$ISO_C3) %>% 
-    left_join(pop_weight, by=c("ISO_C3"="Region") )%>% 
+    left_join(pop_weight, by=c("ISO_C3"="Region") ) %>% 
     drop_na() 
 Delta_gdp_cc %>% dim()
 colnames(Delta_gdp_cc)
@@ -95,7 +99,7 @@ gdp_CC %>% dim()
 Delta_gdp_cc <- gdp_CC %>% 
     as_tibble() %>% 
     mutate(ISO_C3 = Delta_all_df$ISO_C3) %>% 
-    left_join(pop_weight, by=c("ISO_C3"="Region") )%>% 
+    left_join(pop_weight, by = c("ISO_C3"="Region")) %>% 
     drop_na() 
 Delta_gdp_cc
 
