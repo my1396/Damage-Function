@@ -110,9 +110,9 @@ mean_lag
 
 # choose ssp scenario: one of "SSP126", "SSP245", "SSP370", "SSP585"
 # ssp <- "SSP126"
-# ssp <- "SSP245"
+ssp <- "SSP245"
 # ssp <- "SSP370"
-ssp <- "SSP585"
+# ssp <- "SSP585"
 
 
 ## Prepare regressor matrix ----------------------------------------------------
@@ -258,6 +258,7 @@ Delta_all_df <- Delta_all_df %>%
 colnames(Delta_all_df)[-1] <- seq(2021, 2100)
 Delta_all_df %>% select(ISO_C3, `2021`:`2024`, `2096`:`2100`)
 
+date <- "260226"
 f_name <- ifelse(interactive_terms,
     sprintf("data/%1$s/%1$s_country_eta_%2$s_dynmc_inter_%3$s.csv", ssp, model_id, date),
     sprintf("data/%1$s/%1$s_country_eta_%2$s_dynmc_no_inter_%3$s.csv", ssp, model_id, date)

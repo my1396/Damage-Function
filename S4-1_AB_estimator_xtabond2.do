@@ -6,7 +6,7 @@ sort country_id year
 bys country_id (year): gen trend = year - 1961   // or starting year
 gen trend2 = trend^2
 
-
+//# Main Model
 xtabond2 logd_gdp L.logd_gdp tmp tmp2 pre pre2 ///
     tmp_pre tmp2_pre tmp_pre2 tmp2_pre2 ///
     i.year c.trend#i.country_id c.trend2#i.country_id, ///

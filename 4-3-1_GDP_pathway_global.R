@@ -135,9 +135,15 @@ global_impact_dir_cum
 pct_impact_dir <- global_impact_dir_cum / global_gdp_cum - 1
 pct_impact_dir
 
-sprintf("Global GDP per capita impact in 2100 under %s (direct effects only): %.2f%%, weighted by population", ssp, pct_impact_dir[80] * 100)
+glue(
+  "Global GDP per capita impact in 2100 under {ssp}:
+     - All effects (population weighted): {round(pct_impact_interactive[80] * 100, 2)}%
+     - Direct effects only (population weighted): {round(pct_impact_dir[80] * 100, 2)}%
+     - Indirect effects (damage mitigation): {round((pct_impact_interactive[80] - pct_impact_dir[80]) * 100, 2)}%",
+  .trim = FALSE
+)
 
-sprintf("IE-effects in 2100 under %s (mitigate damage by): %.2f%%", ssp, (pct_impact_interactive[80] - pct_impact_dir[80]) * 100)
+
 
 # Plot direct effects only, no IE-effects
 plot_data <- tibble(time = time_vec, impact = pct_impact_dir * 100)

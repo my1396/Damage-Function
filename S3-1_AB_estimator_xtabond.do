@@ -1,6 +1,9 @@
 use "data/GDP_reg_panelData.dta", clear
 
 //# Arellano–Bond Estimator
+// xtabond is NOT used in the final version as it does not have diagnostic test results
+// We choose to use xtabond2 by David Roodman in the end.
+
 // robust SE -> Use this one
 xi: xtabond logd_gdp tmp tmp2 pre pre2 ///
 	tmp_pre tmp2_pre tmp_pre2 tmp2_pre2 ///
