@@ -11,10 +11,22 @@
 
 # ignore data
 data/population/
-data/SSP*
 data/cntry_code.csv
 data/historical_climate
-figures/
-*.dta
-6-5_Fig3.R
+
+# root level figures folder
+/figures/
+
+# --- SSP scenario data ------------------------------------------------------
+# The per-scenario folders are 1.8-3.9 GB each (10.8 GB total) and stay out of
+# the repo. Two exceptions are inputs the Revision_2026Aug pipeline reads and
+# are only ~16 KB each, so they are tracked:
+#   data/SSP*/climate_trend/climate_trend_{tas,pr}.csv
+#   data/SSP_Population_weight.csv
+data/SSP*
+!data/SSP_Population_weight.csv
+!data/SSP*/
+data/SSP*/**
+!data/SSP*/climate_trend/
+!data/SSP*/climate_trend/*.csv
 

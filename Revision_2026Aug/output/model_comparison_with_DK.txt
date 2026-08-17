@@ -1,0 +1,45 @@
+Climate effects on GDP per-capita growth: estimator and variance comparison
+Data: GDP_reg_panelData_V2 | N = 122 countries, T = 59 years, 6,456 obs
+
+AFE            additive country + year FE (within), HC0 SE clustered by country
+AFE ... DK(3)  same point estimates, Driscoll-Kraay SE, bandwidth 3
+IFE            interactive FE, Bai (2009) iterated PC, 4 factors, Bai (2009) SE
+Country-specific linear + quadratic trends in all columns.
+Significance: * p<0.10  ** p<0.05  *** p<0.01
+
+     Variable  AFE-Direct AFE-Direct DK(3)  IFE-Direct AFE-Interact
+            T  0.01059***       0.01059***  0.00722***   0.01548***
+                (0.00252)        (0.00236)   (0.00229)    (0.00414)
+          T^2 -0.00040***      -0.00040*** -0.00030***  -0.00057***
+                (0.00009)        (0.00011)   (0.00008)    (0.00015)
+            P   0.01849**         0.01849*    0.01331*    0.11039**
+                (0.00774)        (0.01063)   (0.00707)    (0.04679)
+          P^2 -0.00458***        -0.00458*  -0.00337**   -0.07314**
+                (0.00149)        (0.00229)   (0.00157)    (0.02919)
+        T x P                                            -0.01131**
+                                                          (0.00482)
+      T^2 x P                                             0.00033**
+                                                          (0.00014)
+      T x P^2                                             0.00665**
+                                                          (0.00260)
+    T^2 x P^2                                           -0.00016***
+                                                          (0.00006)
+ Observations        6456             6456        6456         6456
+ AFE-Interact DK(3) IFE-Interact
+         0.01548***   0.01228***
+          (0.00313)    (0.00382)
+        -0.00057***  -0.00047***
+          (0.00014)    (0.00012)
+          0.11039**     0.09139*
+          (0.04259)    (0.05165)
+         -0.07314**   -0.05714**
+          (0.02770)    (0.02580)
+        -0.01131***   -0.01037**
+          (0.00378)    (0.00496)
+         0.00033***    0.00031**
+          (0.00011)    (0.00013)
+         0.00665***    0.00530**
+          (0.00222)    (0.00225)
+        -0.00016***   -0.00013**
+          (0.00005)    (0.00005)
+               6456         6456

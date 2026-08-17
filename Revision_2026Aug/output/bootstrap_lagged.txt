@@ -1,0 +1,22 @@
+BOOTSTRAP DISTRIBUTION OF GLOBAL 2100 DAMAGE -- DISTRIBUTED-LAG MODEL
+=====================================================================
+
+Scenario: SSP585 | draws: 1000 | countries: 149 
+Global aggregation follows BHM: each country's GDP path is compounded
+first, then summed across countries (GDP-share weighted damages).
+Coefficients drawn from N(c_hat, V_hat) and mapped to beta_0..beta_L.
+
+    ssp        spec estimator L   point    mean  median     sd    q025     q05
+ SSP585 Interactive       AFE 0 -0.2594 -0.1622 -0.2216 0.3530 -0.6620 -0.6166
+ SSP585 Interactive       AFE 1 -0.2601 -0.0670 -0.1871 0.5675 -0.7460 -0.7135
+ SSP585 Interactive       AFE 2 -0.2211  0.0802 -0.1522 0.8286 -0.7734 -0.7189
+ SSP585 Interactive       IFE 0 -0.3663 -0.3273 -0.3647 0.2053 -0.6258 -0.5906
+ SSP585 Interactive       IFE 1 -0.4887 -0.4068 -0.4490 0.2500 -0.7506 -0.7223
+ SSP585 Interactive       IFE 2 -0.4655 -0.3599 -0.4160 0.2874 -0.7520 -0.7128
+    q95   q975 p_worse_than_50pct
+ 0.5011 0.6794              0.152
+ 0.9832 1.4048              0.197
+ 1.6369 2.2414              0.210
+ 0.0655 0.1500              0.202
+ 0.0652 0.1614              0.400
+ 0.1727 0.3582              0.352
