@@ -58,7 +58,7 @@ load_projection_inputs <- function(ssp,
     p  <- p %>% select(Region, all_of(py))
 
     gdp0 <- read_csv(file.path(root_dir,
-                               "../data/MergeDataset/data/cntry_ann_climate_gdpKD_1961to2019.csv"),
+                               "data/cntry_ann_climate_gdpKD_1961to2019.csv"),
                      show_col_types = FALSE, na = "..") %>%
         filter(year %in% 2015:2019, !is.na(NY.GDP.PCAP.KD)) %>%
         group_by(ISO_C3) %>%
