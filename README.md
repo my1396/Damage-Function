@@ -8,8 +8,9 @@ The repository holds two snapshots of the analysis:
 
 | Folder | Status |
 |---|---|
-| [`ERL_2026Feb/`](ERL_2026Feb) | Version submitted to *Environmental Research Letters*, February 2026. Frozen. |
 | [`Revision_2026Aug/`](Revision_2026Aug) | Current revision. All new work goes here. |
+| [`ERL_2026Feb/`](ERL_2026Feb) | Version submitted to *Environmental Research Letters* (ERL), February 2026. Frozen. |
+
 
 Shared across both: [`data/`](data) (inputs), [`helper_function/`](helper_function),
 and `figures/` (root-level, untracked).
@@ -18,29 +19,27 @@ and `figures/` (root-level, untracked).
 
 ## `Revision_2026Aug/` — current revision
 
-Four things changed relative to the submitted version:
+Four things changed relative to the ERL version:
 
 1. **Interactive fixed effects** (Bai 2009) added alongside additive fixed
    effects, to address cross-sectional dependence that survives year effects.
 2. **Distributed lags in climate** ($L = 0\ldots5$) to test the growth-effects
    assumption directly rather than assume it.
-3. **Global aggregation corrected.** The submitted version averaged country
-   *growth rates* with population weights and then cumulated. World GDP growth is
-   by definition a *GDP-share* weighted average, so each country's path must be
-   compounded first and then summed — as in Burke, Hsiang & Miguel (2015). This
-   change alone moves the 2100 impact from about −65% to −26% (AFE) / −37% (IFE).
-4. **Instrument count** in the Arellano-Bond GMM reduced via `collapse`, after
-   which GMM and within estimates agree.
+3. **Global aggregation corrected.** The ERL version averaged country
+   *growth rates* with population weights and then cumulated/compounded. 
+   The average-and-compound approach overweighs countries with large losses. Now we compound each country’s growth rate and then take the population-weighted average for the global damage projection.
+   This change alone moves the 2100 impact from about −65% (ERL documented) to −26% (AFE) / −37% (IFE).
+4. **Bootstrapped confidence intervals** for the impact projections.
 
 ### Scripts, in run order
 
-Numbering reflects dependencies: every script reads only from lower-numbered ones.
+Numbering reflects dependencies: scripts run in numeric order. Stata do-files are prefixed with `S`.
 
 | Script | Purpose |
 |---|---|
-| `_projection_common.R` | Shared projection machinery — inputs, $\eta_{i,t}$, and the **global aggregation**. Sourced by 5, 7, 8, 9, 90. Single source of truth; do not duplicate the aggregation elsewhere. |
+| `_projection_common.R` | Shared projection machinery — inputs, $\eta_{i,t}$, and the global aggregation. Sourced by 5, 7, 8, 9, 90. Single source of truth; do not duplicate the aggregation elsewhere. |
 | `1_four_model_comparison.R` | AFE vs IFE × direct ($M=4$) vs interactive ($M=8$), contemporaneous only |
-| `2_merge_DK.R` | Merges Driscoll-Kraay standard errors from `../S2-1_FE.do` into the table from 1 |
+| `2_merge_DK.R` | Merges Driscoll-Kraay standard errors from `ERL_2026Feb/S2-1_FE.do` into the table from 1 |
 | `3_lagged_climate.R` | Estimates the **24 models**: 2 specs × 6 lag lengths × 2 estimators. Slow (~20 min). Writes `lagged_climate_fits.rds` with coefficients *and* covariances. |
 | `4_lag_coefficient_table.R` | Inverts the reparameterization to recover $\beta_0\ldots\beta_L$ with delta-method SEs |
 | `5_projection_lagged.R` | Country and global impacts, $L = 0\ldots5$, all four SSPs |
@@ -51,7 +50,7 @@ Numbering reflects dependencies: every script reads only from lower-numbered one
 | `90_diagnostic_aggregation_comparison.R` | **Diagnostic, not a pipeline stage.** Documents why the aggregation was changed. Runs after 4. |
 | `S1_dynamic_lagged_y.do` | Stata: lagged $y$ via within and Arellano-Bond GMM, stationary and full samples, with and without collapsed instruments |
 
-Outputs go to `Revision_2026Aug/output/` (tables, CSVs, logs) and
+Outputs go to `Revision_2026Aug/output/` (tables and CSVs) and
 `Revision_2026Aug/figures/` (PNGs).
 
 ### Key results
@@ -60,29 +59,23 @@ Outputs go to `Revision_2026Aug/output/` (tables, CSVs, logs) and
   IFE; beyond $L=2$ the lag polynomial is **not identified** (sign-flipped
   projections, a quarter of AFE bootstrap draws positive).
 - 2100 global impact under SSP585, interactive specification:
-  **−25.9% (AFE)** and **−36.6% (IFE)** at $L=0$; bootstrap 90% interval for IFE
-  roughly $[-59\%, +7\%]$.
-- Temperature-precipitation interactions **mitigate** damages by about 14% of the
-  direct-only impact.
+  **−25.9% (AFE)** and **−36.6% (IFE)** at $L=0$; bootstrap 90% interval for IFE roughly $[-59\%, +7\%]$.
+- Temperature-precipitation interactions **mitigate** damages by about 14% of the direct-only impact.
 
 ---
 
-## `ERL_2026Feb/` — submitted version
+## `ERL_2026Feb/` — outdated version
 
-Frozen snapshot; retained for reference and reproducibility of the submission.
-Scripts run in numeric order (`1-1` → `7-4`), with the Stata do-files (`S1`–`S4`,
-`CCE.do`, `country_time_trend.do`) supplying the dynamic-panel estimates that the
-`4-2-*` R scripts read back in. `fun_script.R` holds user-defined helpers.
+Frozen snapshot; retained for reference and reproducibility of the submission to ERL.
 
-Two known issues, both fixed in the revision: the global aggregation described
-above, and Arellano-Bond GMM run with ~1,660 instruments against 122 countries,
-which makes the Hansen test degenerate.
+Scripts run in numeric order (`1-1` → `7-4`), with the Stata do-files (`S1`–`S4`, `CCE.do`, `country_time_trend.do`) supplying the dynamic-panel estimates that the `4-2-*` R scripts read back in. `fun_script.R` holds user-defined helpers.
+
+Main issues (fixed in the `Revision_2026Aug`): the global aggregation described above. 
 
 ---
 
 ## `data/`
 
-Tracked inputs (small; everything the revision pipeline needs):
 
 | Path | Used by |
 |---|---|
@@ -93,11 +86,6 @@ Tracked inputs (small; everything the revision pipeline needs):
 | `SSP_Population_weight.csv` | Population shares by scenario |
 | `baseline_growth/SSP{1,2,3,5}_GrowthProjections.csv` | Counterfactual growth |
 | `SSP{126,245,370,585}/climate_trend/climate_trend_{tas,pr}.csv` | Projected climate trends |
-
-**Not tracked.** The per-scenario `SSP*/` folders hold raw CMIP6 output totalling
-~10.8 GB; `.gitignore` keeps everything in them out except the `climate_trend`
-files above. `data/population/`, `data/historical_climate/`, and the root
-`figures/` are also excluded.
 
 ---
 
