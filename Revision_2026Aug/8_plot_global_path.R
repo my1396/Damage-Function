@@ -1,6 +1,6 @@
-## =============================================================================
+## ========================================================================== ##
 ## Global GDP damage pathway 2021-2100 under L = 0, 1, 2, for AFE and IFE,
-## for BOTH regressor sets:
+## for BOTH regressor sets (between-model comparison):
 ##   Interactive (M = 8): T, T2, P, P2 and the four T x P interactions
 ##   Direct      (M = 4): T, T2, P, P2 only
 ##
@@ -13,14 +13,17 @@
 ##
 ## Out: figures/fig_global_damage_path_interactive.png
 ##      figures/fig_global_damage_path_direct.png
+##      figures/fig_global_damage_path_comparison.png
+##      figures/fig_global_damage_fan.png
 ##      output/global_damage_path.csv   (both specs, long)
-## =============================================================================
+## ========================================================================== ##
 
 suppressMessages(library(tidyverse))
 
 root_dir <- "/Users/menghan/Documents/GDP/Shared folder"
 setwd(root_dir)
 source(file.path(root_dir, "Revision_2026Aug", "_projection_common.R"))
+source(file.path(root_dir, "Revision_2026Aug", "_fig_theme.R"))
 out_dir <- file.path(root_dir, "Revision_2026Aug", "output")
 fig_dir <- file.path(root_dir, "Revision_2026Aug", "figures")
 dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
@@ -29,11 +32,9 @@ SSP   <- "SSP585"
 YEARS <- PROJ_YEARS
 LAGS  <- 0:2
 
-COL <- c(AFE = "#2a78d6", IFE = "#eb6834")
-INK <- "#0b0b0b"
-INK_SOFT  <- "#52514e"
-INK_MUTED <- "#8a8985"
-SURFACE   <- "#fcfcfb"
+## INK / INK_SOFT / INK_MUTED and my_theme come from _fig_theme.R
+COL     <- c(AFE = "#2a78d6", IFE = "#eb6834")
+SURFACE <- "white"
 
 inp  <- load_projection_inputs(SSP, root_dir)
 lagc <- read_csv(file.path(out_dir, "lag_coefficients_long.csv"), show_col_types = FALSE)
@@ -52,9 +53,9 @@ paths <- map_dfr(c("Interactive", "Direct"), function(sp) {
 
 write_csv(paths, file.path(out_dir, "global_damage_path.csv"))
 
-## =============================================================================
-## 3. Plot, one figure per specification
-## =============================================================================
+## ========================================================================== ##
+## 1. Plot, one figure per specification ---------------------------------------
+## ========================================================================== ##
 make_plot <- function(sp) {
     d <- paths %>% filter(spec == sp)
     ends <- d %>% group_by(estimator, panel) %>% filter(year == max(year)) %>% ungroup()
@@ -87,25 +88,15 @@ make_plot <- function(sp) {
                               "than the spread between these lines.\n",
                               "Beyond L = 2 the lag polynomial is not identified and paths ",
                               "are not shown.")) +
-        theme_minimal(base_size = 11) +
+        my_theme +
         theme(
             plot.background  = element_rect(fill = SURFACE, colour = NA),
             panel.background = element_rect(fill = SURFACE, colour = NA),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_line(colour = "#e6e5e1", linewidth = 0.3),
-            panel.spacing    = unit(14, "pt"),
-            axis.title       = element_text(colour = INK_SOFT, size = 10),
-            axis.text        = element_text(colour = INK_SOFT, size = 9),
-            strip.text       = element_text(colour = INK, size = 10, face = "bold",
-                                            margin = margin(b = 4)),
-            plot.title       = element_text(colour = INK, size = 13, face = "bold"),
-            plot.subtitle    = element_text(colour = INK_SOFT, size = 10,
-                                            margin = margin(b = 8)),
-            plot.caption     = element_text(colour = INK_MUTED, size = 8, hjust = 0,
-                                            margin = margin(t = 10)),
-            legend.position  = "top",
+            strip.text       = element_text(margin = margin(b = 4)),
+            plot.subtitle    = element_text(margin = margin(b = 8)),
+            plot.caption     = element_text(size = 8),
             legend.title     = element_blank(),
-            legend.text      = element_text(colour = INK_SOFT, size = 9),
+            legend.text      = element_text(colour = INK_SOFT),
             legend.key.width = unit(18, "pt"))
 }
 
@@ -125,10 +116,48 @@ print(as.data.frame(
     row.names = FALSE)
 
 
-## =============================================================================
-## 4. Fan chart: point estimate + bootstrap density bands
+## ========================================================================== ##
+## 2. Path, two specifications in one panel ------------------------------------
+## ========================================================================== ##
+gp <- readr::read_csv(
+    "/Users/menghan/Documents/GDP/Shared folder/Revision_2026Aug/output/global_damage_path.csv",
+    show_col_types = FALSE
+) |>
+    filter(L <= 2) |>
+    mutate(
+        panel = factor(paste0("L = ", L), levels = paste0("L = ", 0:2)),
+        spec = factor(spec, levels = c("Interactive", "Direct"))
+    )
+
+p_gp <- ggplot(gp, aes(year, delta, colour = estimator, linetype = spec)) +
+    geom_hline(yintercept = 0, colour = "#8a8985", linewidth = 0.3) +
+    geom_line(linewidth = 0.75) +
+    facet_wrap(~panel) +
+    scale_colour_manual(values = c(AFE = "#2a78d6", IFE = "#eb6834")) +
+    scale_linetype_manual(
+        values = c(Interactive = "solid", Direct = "22"),
+        labels = c(Interactive = "M = 8", Direct = "M = 4")
+        ) +
+    scale_x_continuous(breaks = c(2025, 2050, 2075, 2100)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    labs(
+        x = NULL, y = expression(delta[t] ~ "= GDP(CC) / GDP(no CC) - 1"),
+        colour = "Estimator", linetype = "Specification",
+        title = "Estimator and specification comparison, SSP585",
+        subtitle = "M = 8 (full climate variables), M = 4 (direct terms only)"
+    ) +
+    my_theme +
+    theme(
+        plot.background  = element_rect(fill = SURFACE, colour = NA),
+        panel.background = element_rect(fill = SURFACE, colour = NA)
+    )
+ggsave(file.path(fig_dir, "fig_global_damage_path_comparison.png"), p_gp,
+       width = 8.8, height = 4, dpi = 200, bg = SURFACE)
+
+## ========================================================================== ##
+## 3. Fan chart: point estimate + bootstrap density bands ----------------------
 ##    Requires 7_bootstrap_lagged_projection.R (path quantiles).
-## =============================================================================
+## ========================================================================== ##
 fq_file <- file.path(out_dir, "bootstrap_lagged_path_quantiles.csv")
 if (file.exists(fq_file)) {
     fq <- read_csv(fq_file, show_col_types = FALSE) %>%
@@ -162,29 +191,16 @@ if (file.exists(fq_file)) {
              subtitle = paste0(SSP, ", interactive specification, 1,000 draws. ",
                                "Solid = point estimate, dashed = bootstrap median.\n",
                                "Shading: 50% / 80% / 95% intervals, darkest to lightest."),
-             x = NULL, y = expression(delta[t]~"= GDP(CC) / GDP(no CC) - 1"),
-             caption = paste0("Coefficients drawn from N(c_hat, V_hat) and mapped to ",
-                              "beta_0..beta_L. Distributions are right-skewed because\n",
-                              "damages compound, so the median sits below the mean and ",
-                              "the point estimate tracks the median, not the mean.\n",
-                              "y-axis clipped at +/-100%; the AFE upper tail extends ",
-                              "beyond +200% at L = 2.")) +
-        theme_minimal(base_size = 11) +
+             x = NULL, y = expression(delta[t]~"= GDP(CC) / GDP(no CC) - 1")
+             ) +
+        my_theme +
         theme(plot.background = element_rect(fill = SURFACE, colour = NA),
               panel.background = element_rect(fill = SURFACE, colour = NA),
-              panel.grid.minor = element_blank(),
-              panel.grid.major = element_line(colour = "#e6e5e1", linewidth = 0.3),
-              panel.spacing = unit(14, "pt"),
-              axis.title = element_text(colour = INK_SOFT, size = 10),
-              axis.text = element_text(colour = INK_SOFT, size = 9),
-              strip.text = element_text(colour = INK, size = 10, face = "bold",
-                                        margin = margin(b = 4, t = 2)),
-              plot.title = element_text(colour = INK, size = 13, face = "bold"),
-              plot.subtitle = element_text(colour = INK_SOFT, size = 9.5,
-                                           margin = margin(b = 8)),
-              plot.caption = element_text(colour = INK_MUTED, size = 8, hjust = 0,
-                                          margin = margin(t = 10)))
-
+              strip.text = element_text(margin = margin(b = 4, t = 2)),
+              plot.title = element_text(size = rel(1.5)),
+              plot.subtitle = element_text(size = rel(1.2), margin = margin(b = 4)),
+              plot.caption = element_text(size = 8))
+    pf
     ggsave(file.path(fig_dir, "fig_global_damage_fan.png"), pf,
            width = 8.8, height = 5.4, dpi = 200, bg = SURFACE)
     cat("Wrote figures/fig_global_damage_fan.png\n")

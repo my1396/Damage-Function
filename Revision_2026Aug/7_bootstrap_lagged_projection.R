@@ -1,4 +1,3 @@
-## =============================================================================
 ## Bootstrap distribution of the global 2100 damage, distributed-lag model.
 ##
 ## Follows 7-1_bootstrap_regression.R / 7-2_bootstrap_path_persistent.R in
@@ -20,7 +19,7 @@
 ## each year, cumulated, then compared with the no-climate-change path.
 ##
 ## Out: output/bootstrap_lagged_*.csv , output/fig_bootstrap_damage.png
-## =============================================================================
+## ========================================================================== ##
 
 suppressMessages(library(tidyverse))
 
@@ -29,6 +28,7 @@ setwd(root_dir)
 source(file.path(root_dir, "Revision_2026Aug", "_projection_common.R"))
 out_dir <- file.path(root_dir, "Revision_2026Aug", "output")
 
+# fix random seed for reproducibility
 set.seed(20260814)
 NDRAW <- 1000
 SSP   <- "SSP585"
@@ -40,9 +40,9 @@ inp  <- load_projection_inputs(SSP, root_dir)
 cat(sprintf("Countries: %d | BHM aggregation (compound within country, then sum)\n",
             nrow(inp$cl)))
 
-## =============================================================================
-## 2. Draw coefficients and map Bewley c -> beta_j
-## =============================================================================
+## ========================================================================== ##
+## 1. Draw coefficients and map Bewley c -> beta_j -----------------------------
+## ========================================================================== ##
 draw_c <- function(chat, V, n) {
     V <- (V + t(V)) / 2
     ev <- eigen(V, symmetric = TRUE)
@@ -62,17 +62,17 @@ c_to_beta <- function(cc, L) {
     b
 }
 
-## =============================================================================
-## 3. eta and the global path for one beta draw
-## =============================================================================
+## ========================================================================== ##
+## 2. eta and the global path for one beta draw --------------------------------
+## ========================================================================== ##
 delta_path <- function(B, regs) {
     eta <- eta_matrix(inp$cl, B, regs)
     global_delta(eta, inp$G, inp$POP, inp$gp0)      # full 2021-2100 path
 }
 
-## =============================================================================
-## 4. Run
-## =============================================================================
+## ========================================================================== ##
+## 3. Run ----------------------------------------------------------------------
+## ========================================================================== ##
 res <- list(); paths <- list(); fanq <- list()
 
 for (sp in SPECS) {

@@ -1,0 +1,56 @@
+BETWEEN-MODEL INTERACTIVE CONTRIBUTION: BOOTSTRAP UNCERTAINTY
+=============================================================
+
+Scenario: SSP585 | draws: 1000 | countries: 149 
+IE^between_t = delta^M8_t - delta^M4_t, the difference between the two
+SEPARATELY ESTIMATED models plotted in 8_plot_global_path.R. Contrast 9-2,
+which zeroes the interaction coefficients inside the M = 8 fit.
+A POSITIVE value means the interactive model projects milder damages.
+
+Both models are fitted to the same panel, so every draw keeps the two
+PAIRED. AFE refits both on each resampled country panel; IFE draws from
+the stacked-score joint covariance of 3-1_joint_covariance.R (meat: V_clu ).
+Drawing them independently inflates the 90% band by the factor in
+the 'indep infl' columns of the second table.
+Units: percentage points of the 2100 GDP ratio.
+
+ estimator L                    method draws IE 2100 (pp) median (pp) sd (pp)
+       AFE 0        Country resampling  1000          6.4         6.2     7.6
+       AFE 1        Country resampling  1000          2.0         2.9    12.7
+       AFE 2        Country resampling  1000         -3.9        -0.5    23.0
+       IFE 0 Joint analytic covariance  1000          3.0         3.3     3.7
+       IFE 1 Joint analytic covariance  1000         -1.7        -0.8     4.4
+       IFE 2 Joint analytic covariance  1000          2.3         4.2    11.4
+ 90% CI lo 90% CI hi 95% CI lo 95% CI hi P(IE > 0)
+      -2.3      20.0      -3.8      24.1     0.894
+      -5.5      24.1      -8.5      30.7     0.724
+     -19.6      31.0     -24.9      59.2     0.475
+      -1.2      10.3      -2.0      12.1     0.884
+      -5.6       7.3      -7.4      11.0     0.386
+      -4.1      26.2      -5.7      32.4     0.780
+
+
+--- Do the two paired routes agree? (90% width of IE_2100) ---
+
+AFE is the only estimator that can be both refit and drawn analytically,
+so it is the only place the analytic route can be checked. 'AFE ratio' is
+analytic / resampled: near 1 means the joint covariance reproduces what
+actually refitting the models gives, which is the evidence that the IFE
+bands -- where no refit is possible -- can be trusted.
+The ratio comes in below 1: the analytic route imposes normality on c_hat
+while resampling picks up its heavier tails, the same effect 9-3 found
+when the country-resampled coefficient sd came in 1.1-1.6x the analytic
+clustered se. Read the IFE bands as, if anything, slightly narrow.
+The V_bai columns re-run the analytic route with Bai's heteroskedastic
+meat instead of the clustered one, as a sensitivity on that choice.
+'indep infl' is what the 90% width becomes if the M4 draws are shuffled
+against the M8 draws, i.e. if the pairing is thrown away.
+
+ L AFE resampled w90 AFE analytic w90 AFE ratio AFE analytic V_bai
+ 0             0.223            0.196     0.879              0.190
+ 1             0.296            0.214     0.723              0.234
+ 2             0.506            0.400     0.791              0.388
+ IFE analytic w90 IFE V_bai w90 AFE indep infl IFE indep infl
+            0.115         0.096          6.911          7.625
+            0.129         0.102          8.864          9.260
+            0.303         0.191          7.888          5.257

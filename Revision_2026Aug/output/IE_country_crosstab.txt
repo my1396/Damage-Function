@@ -1,0 +1,106 @@
+
+##########################################################
+## AFE --- 149 countries, SSP585, L = 0, impacts at 2100
+##########################################################
+
+IE > 0  (interaction makes the GDP impact BETTER)
+================================================== 
+
+
+                 Dir: positive   Dir: negative
+--------------  --------------  --------------
+All: positive                1               6
+All: negative                0             101
+
+
+IE < 0  (interaction makes the GDP impact WORSE)
+================================================== 
+
+
+                 Dir: positive   Dir: negative
+--------------  --------------  --------------
+All: positive               24               0
+All: negative                2              15 
+
+-- as % of countries --
+IE > 0  (interaction makes the GDP impact BETTER)
+================================================== 
+
+
+                Dir: positive   Dir: negative 
+--------------  --------------  --------------
+All: positive   0.7%            4.0%          
+All: negative   0.0%            67.8%         
+
+
+IE < 0  (interaction makes the GDP impact WORSE)
+================================================== 
+
+
+                Dir: positive   Dir: negative 
+--------------  --------------  --------------
+All: positive   16.1%           0.0%          
+All: negative   1.3%            10.1%          
+
+-- regional composition of the dominant cell (IE>0, All<0, Dir<0) --
+ region  n
+  _SSAF 36
+  _SEAS 19
+   _LAC 18
+  _MENA 15
+ _WEOFF  7
+  _EECA  4
+   <NA>  2
+
+##########################################################
+## IFE --- 149 countries, SSP585, L = 0, impacts at 2100
+##########################################################
+
+IE > 0  (interaction makes the GDP impact BETTER)
+================================================== 
+
+
+                 Dir: positive   Dir: negative
+--------------  --------------  --------------
+All: positive                0               3
+All: negative                0             107
+
+
+IE < 0  (interaction makes the GDP impact WORSE)
+================================================== 
+
+
+                 Dir: positive   Dir: negative
+--------------  --------------  --------------
+All: positive               23               0
+All: negative                1              15 
+
+-- as % of countries --
+IE > 0  (interaction makes the GDP impact BETTER)
+================================================== 
+
+
+                Dir: positive   Dir: negative 
+--------------  --------------  --------------
+All: positive   0.0%            2.0%          
+All: negative   0.0%            71.8%         
+
+
+IE < 0  (interaction makes the GDP impact WORSE)
+================================================== 
+
+
+                Dir: positive   Dir: negative 
+--------------  --------------  --------------
+All: positive   15.4%           0.0%          
+All: negative   0.7%            10.1%          
+
+-- regional composition of the dominant cell (IE>0, All<0, Dir<0) --
+ region  n
+  _SSAF 36
+   _LAC 21
+  _SEAS 21
+  _MENA 15
+ _WEOFF  8
+  _EECA  4
+   <NA>  2

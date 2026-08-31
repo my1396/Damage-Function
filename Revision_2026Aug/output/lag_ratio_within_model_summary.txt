@@ -1,0 +1,79 @@
+SUMMARY STATISTICS
+==================
+
+n is a ROW count. The 40 rows are 20 fitted models read at two temperature
+percentiles, so the two readings of a model share one coefficient vector
+and are not independent. L = 0 is excluded: rho = 1 there by construction.
+se_mean is the mean delta-method standard error of rho in the group.
+
+--- All rows ---
+
+    group  n  mean median    sd   min   max se_mean
+ all rows 40 0.582  0.615 0.178 0.075 0.897    0.54
+
+
+--- By specification ---
+
+        spec  n  mean median    sd   min   max se_mean
+      Direct 20 0.520  0.563 0.138 0.174 0.749   0.482
+ Interactive 20 0.645  0.691 0.194 0.075 0.897   0.598
+
+
+--- By estimator ---
+
+ estimator  n  mean median    sd   min   max se_mean
+       AFE 20 0.491  0.485 0.173 0.075 0.778   0.579
+       IFE 20 0.674  0.679 0.132 0.351 0.897   0.501
+
+
+--- By specification and estimator ---
+
+        spec estimator  n  mean median    sd   min   max se_mean
+      Direct       AFE 10 0.458  0.467 0.140 0.174 0.648   0.523
+      Direct       IFE 10 0.582  0.615 0.110 0.351 0.749   0.442
+ Interactive       AFE 10 0.523  0.533 0.202 0.075 0.778   0.635
+ Interactive       IFE 10 0.766  0.750 0.077 0.649 0.897   0.561
+
+
+--- By lag length ---
+
+ L n  mean median    sd   min   max se_mean
+ 1 8 0.643  0.644 0.068 0.563 0.747   0.313
+ 2 8 0.540  0.536 0.128 0.386 0.713   0.384
+ 3 8 0.619  0.627 0.149 0.351 0.778   0.665
+ 4 8 0.610  0.569 0.170 0.426 0.870   0.663
+ 5 8 0.499  0.516 0.295 0.075 0.897   0.676
+
+
+--- Extremes ---
+
+       which        spec estimator L T_pct ratio se_ratio     lo    hi
+  lowest rho Interactive       AFE 5   90% 0.075    0.848 -1.588 1.737
+ highest rho Interactive       IFE 5   50% 0.897    0.625 -0.327 2.122
+
+
+--- What the confidence bands rule out ---
+
+        spec estimator  n covers_1 covers_0 covers_both excludes_0
+      Direct       AFE 10       10       10          10          0
+      Direct       IFE 10       10        6           6          4
+ Interactive       AFE 10       10       10          10          0
+ Interactive       IFE 10       10        6           6          4
+
+
+--- Reading ---
+
+All 40 of 40 point estimates fall inside [0, 1], between a pure level
+effect and a pure growth effect. The median is 0.62 and the mean 0.58, so
+the central estimate is that roughly 62% of the impact effect survives
+once the lags have played out -- closer to a growth effect than to a level
+effect, but not cleanly either.
+
+The bands are too wide to settle it. 40 of 40 cover rho = 1, 32 cover
+rho = 0, and 32 cover BOTH, which is to say most rows are consistent with
+either extreme. Standard errors rise steeply with L (see the by-lag-length
+block): adding lag terms buys generality at a real cost in precision.
+
+Only 8 rows rule out a pure level effect (lo > 0): IFE L=1, IFE L=2.
+Those are the short-lag IFE fits, the most precisely estimated cells.
+No row rules out a pure growth effect.

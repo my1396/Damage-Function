@@ -9,6 +9,9 @@
 .vscode/
 ~*.stswp
 
+# Stata auxiliary files
+*.log
+
 # ignore data
 data/population/
 data/cntry_code.csv

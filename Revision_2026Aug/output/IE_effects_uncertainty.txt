@@ -1,0 +1,29 @@
+BOOTSTRAP UNCERTAINTY OF THE INTERACTIVE CONTRIBUTION (IE-effects)
+==================================================================
+
+Scenario: SSP585 | spec: Interactive | draws: 1000 | countries: 149 
+IE-effects_t = delta^All_t - delta^Dir_t, differenced within each draw.
+delta^Dir applies the same drawn coefficients with the four interaction
+terms set to zero. A POSITIVE value means interactions MITIGATE damages.
+Coefficients drawn from N(c_hat, V_hat) and mapped to beta_0..beta_L.
+Units: percentage points of the 2100 GDP ratio.
+
+sd(IE)/sd(All) compares the spread of the interactive contribution with
+the spread of delta^All itself. It exceeds 1 at L = 2 because the two
+compounded pathways diverge there: the difference of two paths is not
+bounded by their levels.
+
+ estimator L IE 2100 (pp) median (pp) sd (pp) 90% CI lo 90% CI hi 95% CI lo
+       AFE 0          4.2         4.0    28.6     -45.5      36.9     -70.9
+       AFE 1         12.5         6.9    40.1     -57.0      44.7     -85.1
+       AFE 2        -20.0       -31.6   241.6    -373.3      32.1    -525.4
+       IFE 0          5.9         4.7    23.2     -42.6      32.6     -53.6
+       IFE 1         -2.7        -3.6    34.8     -75.7      31.5    -107.3
+       IFE 2        -63.6       -66.2   153.2    -350.4       4.0    -456.0
+ 95% CI hi P(IE > 0) sd(IE)/sd(All)
+      45.9     0.589           0.81
+      55.7     0.648           0.71
+      51.4     0.237           2.92
+      41.2     0.593           1.13
+      39.0     0.444           1.39
+      11.3     0.071           5.33

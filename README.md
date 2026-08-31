@@ -61,6 +61,30 @@ Outputs go to `Revision_2026Aug/output/` (tables and CSVs) and
 - 2100 global impact under SSP585, interactive specification:
   **−25.9% (AFE)** and **−36.6% (IFE)** at $L=0$; bootstrap 90% interval for IFE roughly $[-59\%, +7\%]$.
 - Temperature-precipitation interactions **mitigate** damages by about 14% of the direct-only impact.
+  
+  **Within model decomposition:**
+  
+  $\delta_{Dir}$ 
+
+  | Est | L | $\delta^{All}$ | $\delta^{Dir}$ | IE = $\delta^{All}-\delta^{Dir}$ | as % of $\delta^{Dir} = \frac{IE}{\vert \delta^{Dir} \vert}$ |
+  | --- |  --- |  --- |  --- |  --- |  --- |
+  | AFE | 0 | **-25.94%** | -30.16% | +4.22 pp | 14.0% |
+  | IFE | 0 | **-36.63%** | -42.53% | +5.90 pp | 13.9% |
+
+  The IE contribution is not conclusive nor stable across lag lengths. 
+  Given the unstable cumulative coefficients at $L\ge1$, we do not report the IE contribution beyond $L=0$. 
+
+  **Between model comparison:**
+
+  | Estimator | Specification |  L |    2100 |
+  | --------- | ------------- | -: | ------: |
+  | **AFE**   | Direct        |  0 | -32.39% |
+  | **AFE**   | Interactive   |  0 | **-25.94%** |
+  | **IFE**   | Direct        |  0 | -39.65% |
+  | **IFE**   | Interactive   |  0 | **-36.63%** |
+
+
+  
 
 ---
 

@@ -1,4 +1,3 @@
-## =============================================================================
 ## Four-model comparison: Additive FE vs Interactive FE (Bai 2009)
 ##   x  Direct climate terms only  vs  + temperature-precipitation interactions
 ##
@@ -10,7 +9,7 @@
 ## function so it can be called with either regressor set. Deterministic
 ## index alignment (match/rowsum) replaces the merge() calls, which relied on
 ## merge preserving row order.
-## =============================================================================
+## ========================================================================== ##
 
 library(plyr)       # load BEFORE tidyverse so dplyr masks it, not the reverse
 suppressMessages(library(tidyverse))
@@ -24,14 +23,14 @@ out_dir <- file.path(root_dir, "Revision_2026Aug", "output")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## ---- controls ---------------------------------------------------------------
-NFAC          <- 4      # number of interactive factors (as in the original script)
+NFAC          <- 4       # number of interactive factors (as in the original script)
 INCLUDE_TREND <- TRUE    # country-specific linear + quadratic trends in ALL models
 IFE_TOL       <- 5e-4
 IFE_MAXIT     <- 1000
 
-## =============================================================================
-## 1. Data
-## =============================================================================
+## ========================================================================== ##
+## 1. Data ---------------------------------------------------------------------
+## ========================================================================== ##
 Pdata <- read_csv("data/GDP_reg_panelData_V2.csv", show_col_types = FALSE) %>%
     arrange(iso, year)
 
@@ -68,9 +67,9 @@ regs_interact <- c("tmp", "tmp2", "pre", "pre2",
 
 extra <- if (INCLUDE_TREND) trend_names else character(0)
 
-## =============================================================================
-## 2. Additive fixed effects (country + year), within estimator
-## =============================================================================
+## ========================================================================== ##
+## 2. Additive fixed effects (country + year), within estimator ----------------
+## ========================================================================== ##
 run_afe <- function(dat, regs) {
     f <- as.formula(paste("logD_gdp ~", paste(c(regs, extra), collapse = " + ")))
     m <- plm(f, data = dat, index = c("iso", "year"),
@@ -91,9 +90,9 @@ run_afe <- function(dat, regs) {
     )
 }
 
-## =============================================================================
-## 3. Interactive fixed effects, Bai (2009) iterated PC estimator
-## =============================================================================
+## ========================================================================== ##
+## 3. Interactive fixed effects, Bai (2009) iterated PC estimator --------------
+## ========================================================================== ##
 run_ife <- function(dat, regs, nfac = NFAC, tol = IFE_TOL, maxit = IFE_MAXIT) {
 
     nvar <- length(regs)
@@ -208,9 +207,9 @@ run_ife <- function(dat, regs, nfac = NFAC, tol = IFE_TOL, maxit = IFE_MAXIT) {
     )
 }
 
-## =============================================================================
-## 4. Run all four
-## =============================================================================
+## ========================================================================== ##
+## 4. Run all four -------------------------------------------------------------
+## ========================================================================== ##
 cat("\nEstimating...\n")
 fits <- list(
     `M1: AFE-Direct`   = run_afe(Pdata, regs_direct),
@@ -221,9 +220,9 @@ fits <- list(
 
 res <- imap(fits, ~ .x$coefs %>% mutate(model = .y)) %>% bind_rows()
 
-## =============================================================================
-## 5. Comparison table
-## =============================================================================
+## ========================================================================== ##
+## 5. Comparison table ---------------------------------------------------------
+## ========================================================================== ##
 star <- function(p) ifelse(is.na(p), "",
                     ifelse(p < 0.01, "***", ifelse(p < 0.05, "**",
                     ifelse(p < 0.10, "*", ""))))

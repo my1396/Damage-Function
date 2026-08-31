@@ -1,4 +1,3 @@
-## =============================================================================
 ## Lagged climate: growth effects vs level effects
 ##
 ## Distributed-lag model   y_t = sum_{j=0}^{L} beta_j' x_{t-j} + ...
@@ -18,7 +17,7 @@
 ## the direct-only and the interaction regressor set, for L = 0, 1, 2.
 ##
 ## Out: output/lagged_climate_*.csv , output/lagged_climate.txt
-## =============================================================================
+## ========================================================================== ##
 
 library(plyr)
 suppressMessages(library(tidyverse))
@@ -34,9 +33,9 @@ IFE_TOL   <- 5e-4
 IFE_MAXIT <- 1000
 LAGS      <- 0:5
 
-## =============================================================================
+## ========================================================================== ##
 ## 1. Data
-## =============================================================================
+## ========================================================================== ##
 Pdata <- read_csv("data/GDP_reg_panelData_V2.csv", show_col_types = FALSE) %>%
     arrange(iso, year) %>%
     mutate(tmp2 = tmp^2, pre2 = pre^2,
@@ -81,9 +80,9 @@ build_bewley <- function(dat, regs, L) {
     list(dat = d, level = regs, diffs = diffs)
 }
 
-## =============================================================================
+## ========================================================================== ##
 ## 2. Estimators
-## =============================================================================
+## ========================================================================== ##
 run_afe <- function(dat, regs) {
     f <- as.formula(paste("logD_gdp ~", paste(c(regs, extra), collapse = " + ")))
     m <- plm(f, data = dat, index = c("iso", "year"),
@@ -178,9 +177,9 @@ run_ife <- function(dat, regs, nfac = NFAC, tol = IFE_TOL, maxit = IFE_MAXIT) {
          vcov = V)
 }
 
-## =============================================================================
+## ========================================================================== ##
 ## 3. Run the grid
-## =============================================================================
+## ========================================================================== ##
 specs <- list(Direct = regs_direct, Interactive = regs_interact)
 all_coefs <- list(); all_cum <- list(); all_tests <- list(); all_me <- list()
 fits <- list()   # keep coefficients + vcov so tables can be rebuilt without refitting
@@ -249,9 +248,9 @@ ratio <- me %>%
     pivot_wider(names_from = L, values_from = dg_dT, names_prefix = "L") %>%
     mutate(`L1/L0` = L1 / L0, `L2/L0` = L2 / L0)
 
-## =============================================================================
+## ========================================================================== ##
 ## 4. Export
-## =============================================================================
+## ========================================================================== ##
 saveRDS(fits, file.path(out_dir, "lagged_climate_fits.rds"))
 write_csv(coefs, file.path(out_dir, "lagged_climate_coefficients.csv"))
 write_csv(cum,   file.path(out_dir, "lagged_climate_cumulative.csv"))

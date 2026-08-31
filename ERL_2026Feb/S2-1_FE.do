@@ -1,4 +1,4 @@
-use "data/GDP_reg_panelData_V2.dta", clear
+use "data/GDP_reg_panelData.dta", clear
 xtset country_id year_id, yearly
 
 local X1  tmp tmp2 pre pre2

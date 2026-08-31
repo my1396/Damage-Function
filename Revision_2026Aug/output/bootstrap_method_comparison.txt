@@ -1,0 +1,115 @@
+BOOTSTRAP METHOD COMPARISON -- AFE, INTERACTIVE SPEC, SSP585
+============================================================
+
+Country resampling : 122 countries drawn with replacement, each drawn
+  copy given its own fixed effect and its own linear and quadratic
+  trends, AFE refit on the resampled panel. Makes no distributional
+  assumption and regenerates the country clustering directly.
+Coefficient resampling : c ~ N(c_hat, V_hat) from the full-sample fit,
+  no refitting. The method used in 7_ and 9-2, and the only feasible
+  one for IFE. Imposes normality and takes V_hat as known.
+
+Draws: 1000 per method. Dropped for collinearity: L=0: 0, L=1: 0, L=2: 0 
+Both methods share the point estimate; only the bands differ.
+Units: percentage points of the 2100 GDP ratio.
+component All = delta^All_2100, IE = delta^All_2100 - delta^Dir_2100.
+width ratio = 90% width relative to coefficient resampling.
+sd is not reported: a handful of explosive draws dominate it (see the
+second table), so the quantile-based width is the meaningful comparison.
+
+ component L                 method draws point (pp) median (pp) 90% lo 90% hi
+       All 0     Country resampling  1000      -25.9       -21.2  -60.6   54.5
+       All 0 Coefficient resampling  1000      -25.9       -22.2  -61.7   50.1
+       All 1     Country resampling  1000      -26.0       -20.9  -68.1  108.9
+       All 1 Coefficient resampling  1000      -26.0       -18.7  -71.3   98.3
+       All 2     Country resampling  1000      -22.1        -9.3  -70.4  191.3
+       All 2 Coefficient resampling  1000      -22.1       -15.2  -71.9  163.7
+        IE 0     Country resampling  1000        4.2         2.0 -229.7   32.5
+        IE 0 Coefficient resampling  1000        4.2         4.0  -45.5   36.9
+        IE 1     Country resampling  1000       12.5         5.6 -134.5   52.8
+        IE 1 Coefficient resampling  1000       12.5         6.9  -57.0   44.7
+        IE 2     Country resampling  1000      -20.0       -31.6 -465.5   45.9
+        IE 2 Coefficient resampling  1000      -20.0       -31.6 -373.3   32.1
+ 90% width width ratio P(> 0)
+     115.1        1.03  0.260
+     111.8        1.00  0.251
+     177.1        1.04  0.356
+     169.7        1.00  0.345
+     261.7        1.11  0.448
+     235.6        1.00  0.395
+     262.2        3.18  0.530
+      82.4        1.00  0.589
+     187.3        1.84  0.608
+     101.7        1.00  0.648
+     511.4        1.26  0.299
+     405.5        1.00  0.237
+
+
+--- Where the two methods diverge: the delta^Dir counterfactual ---
+
+delta^Dir zeroes the four interaction coefficients and compounds the
+remaining direct terms for 80 years. When a draw puts those terms in the
+positive-growth region the path explodes, and since IE = All - Dir the
+explosion shows up as a large NEGATIVE IE. max Dir (x) is the largest
+delta^Dir_2100 in the sample, as a multiple of counterfactual GDP.
+
+                 method L n Dir > +1000% max Dir (x) n IE < -100pp
+ Coefficient resampling 0              0         3.2             8
+     Country resampling 0             12        39.5            96
+ Coefficient resampling 1              0         6.5            22
+     Country resampling 1              4        19.4            62
+ Coefficient resampling 2             10        49.8           251
+     Country resampling 2             20      1370.9           256
+
+
+--- The within-draw pairing, and what it is worth ---
+
+delta^Dir is not a separate estimate: ie_path() derives it from the SAME
+beta as delta^All by zeroing the four interaction columns, so every draw
+is paired by construction and no cross-model covariance has to be
+recovered. (8-1 does have to recover one, because there the M = 8 and
+M = 4 models are separately estimated.) 'shuffled' differences delta^All
+against a random permutation of delta^Dir, which leaves both marginals
+untouched, so 'pairing worth' is the factor by which the 90% width would
+inflate if the pairing were thrown away.
+
+                 method L cor(All, Dir) paired w90 shuffled w90 pairing worth
+ Coefficient resampling 0         0.756      0.824        1.754          2.13
+     Country resampling 0         0.243      2.622        3.314          1.26
+ Coefficient resampling 1         0.845      1.017        2.810          2.76
+     Country resampling 1         0.512      1.873        3.445          1.84
+ Coefficient resampling 2         0.599      4.055        6.225          1.54
+     Country resampling 2         0.100      5.114        7.708          1.51
+
+
+--- Coefficient level: cluster sd vs analytic (clustered) se ---
+
+Cumulative (level) coefficients only. Ratio near 1 means the two methods
+agree about coefficient uncertainty, so any divergence in the projection
+bands comes from the nonlinear compounding, not from the sampling scheme.
+
+ L      term analytic se cluster sd ratio
+ 0       tmp    4.14e-03   5.64e-03  1.36
+ 0      tmp2    1.49e-04   1.85e-04  1.24
+ 0       pre    4.68e-02   7.24e-02  1.55
+ 0      pre2    2.92e-02   3.72e-02  1.27
+ 0   tmp_pre    4.82e-03   7.61e-03  1.58
+ 0  tmp2_pre    1.44e-04   2.08e-04  1.44
+ 0  pre2_tmp    2.60e-03   3.43e-03  1.32
+ 0 tmp2_pre2    6.10e-05   8.10e-05  1.33
+ 1       tmp    6.56e-03   7.93e-03  1.21
+ 1      tmp2    2.24e-04   2.61e-04  1.17
+ 1       pre    5.75e-02   8.46e-02  1.47
+ 1      pre2    3.34e-02   4.13e-02  1.24
+ 1   tmp_pre    6.21e-03   9.30e-03  1.50
+ 1  tmp2_pre    1.89e-04   2.60e-04  1.38
+ 1  pre2_tmp    3.09e-03   3.93e-03  1.27
+ 1 tmp2_pre2    7.57e-05   9.55e-05  1.26
+ 2       tmp    8.79e-03   1.05e-02  1.19
+ 2      tmp2    2.69e-04   3.07e-04  1.14
+ 2       pre    8.02e-02   1.10e-01  1.37
+ 2      pre2    4.26e-02   5.18e-02  1.22
+ 2   tmp_pre    8.22e-03   1.15e-02  1.39
+ 2  tmp2_pre    2.39e-04   3.13e-04  1.31
+ 2  pre2_tmp    3.65e-03   4.64e-03  1.27
+ 2 tmp2_pre2    8.45e-05   1.09e-04  1.29

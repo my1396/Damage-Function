@@ -1,4 +1,3 @@
-## =============================================================================
 ## Lag-length diagnostics: does the lag structure converge?
 ##
 ## Fig 1  cumulative marginal effect  dy/dT  against lag length L  (y = growth of GDP pc)
@@ -11,7 +10,7 @@
 ##      output/projection_lagged_global.csv          (5_projection_lagged.R)
 ## Out: figures/fig_lag_marginal_effect.png
 ##      figures/fig_lag_projection_ratio.png
-## =============================================================================
+## ========================================================================== ##
 
 suppressMessages(library(tidyverse))
 
@@ -26,7 +25,7 @@ COL <- c(AFE = "#2a78d6", IFE = "#eb6834")
 INK        <- "#0b0b0b"
 INK_SOFT   <- "#52514e"
 INK_MUTED  <- "#8a8985"
-SURFACE    <- "#fcfcfb"
+SURFACE    <- "white"
 
 theme_lag <- function() {
     theme_minimal(base_size = 11) +
@@ -52,9 +51,9 @@ theme_lag <- function() {
         )
 }
 
-## =============================================================================
+## ========================================================================== ##
 ## Fig 1 -- cumulative marginal effect vs L
-## =============================================================================
+## ========================================================================== ##
 me <- read_csv(file.path(out_dir, "lagged_climate_marginal_effects.csv"),
                show_col_types = FALSE) %>%
     filter(T_pct %in% c("50%", "90%")) %>%
@@ -74,28 +73,33 @@ p1 <- ggplot(me, aes(L, dg_dT, colour = estimator, fill = estimator)) +
     geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.13, colour = NA) +
     geom_line(linewidth = 0.7) +
     geom_point(size = 2.2, stroke = 0.9, shape = 21, colour = SURFACE) +
-    geom_text(data = lab1, aes(label = estimator), hjust = -0.25, size = 3.1,
-              fontface = "bold", show.legend = FALSE) +
+    geom_text(
+        data = lab1, aes(label = estimator), hjust = -0.25, size = 3.1,
+        fontface = "bold", show.legend = FALSE
+    ) +
     facet_grid(panel ~ spec) +
     scale_colour_manual(values = COL) +
     scale_fill_manual(values = COL) +
     scale_x_continuous(breaks = 0:5, expand = expansion(mult = c(0.04, 0.13))) +
-    labs(title = "Cumulative effect of temperature on GDP per-capita growth (y), by lag length",
-         subtitle = "Sum of distributed-lag coefficients; shaded band is the 95% interval",
-         x = "Lag length L (years)",
-         y = expression(partialdiff*y/partialdiff*T),
-         caption = paste0("L = 0 is the contemporaneous-only specification used in the paper. ",
-                          "Evaluated at median precipitation (1.085 m/yr).\n",
-                          "A flat curve means the lag structure is fully captured; ",
-                          "a curve still moving at L = 5 means it is not.")) +
-    theme_lag()
-
+    labs(
+        title = "Cumulative effect of temperature on GDP per-capita growth (y), by lag length",
+        subtitle = "Sum of distributed-lag coefficients; shaded band is the 95% interval",
+        x = "Lag length L (years)",
+        y = expression(partialdiff * y / partialdiff * T),
+        caption = paste0(
+            "L = 0 is the contemporaneous-only specification used in the paper. ",
+            "Evaluated at median precipitation."
+        )
+    ) +
+    theme_lag() +
+    theme(legend.position = "none")  # legend is redundant with text labels
+p1
 ggsave(file.path(fig_dir, "fig_lag_marginal_effect.png"), p1,
        width = 8.2, height = 6.0, dpi = 200, bg = SURFACE)
 
-## =============================================================================
+## ========================================================================== ##
 ## Fig 2 -- projection ratio vs L
-## =============================================================================
+## ========================================================================== ##
 gl <- read_csv(file.path(out_dir, "projection_lagged_global.csv"),
                show_col_types = FALSE) %>%
     filter(ssp == "SSP585") %>%

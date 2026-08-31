@@ -13,6 +13,9 @@
 *! Both samples get year FE and country-specific quadratic trends, as in the
 *! static specifications.
 *!
+*! All three estimators within a sample are run on the SAME observations --
+*! e(sample) from the difference GMM, which is the binding constraint.
+*!
 *! Out: Revision_2026Aug/output/dynamic_lagged_y.txt / .csv / .tex
 
 clear all
@@ -24,8 +27,14 @@ capture mkdir "Revision_2026Aug/output"
 local X8   tmp tmp2 pre pre2 tmp_pre tmp2_pre tmp_pre2 tmp2_pre2
 local KEEP L.logd_gdp `X8'
 
+* Scratch lines for stepping through the loop body interactively -- set one of
+* these by hand, then run the loop contents. They must stay commented out: in
+* batch mode the second gen aborts the do-file with r(110).
+// gen smp = "stat"
+// gen smp = "full"
+
 *==============================================================================*
-* Loop over the two samples
+**# Loop over the two samples
 *==============================================================================*
 foreach smp in stat full {
 
@@ -45,13 +54,7 @@ foreach smp in stat full {
     bys country_id (year): gen trend = year - 1961
     gen trend2 = trend^2
 
-    *--- (a) within estimator with lagged y -----------------------------------*
-    reghdfe logd_gdp L.logd_gdp `X8', ///
-        absorb(i.year c.trend#i.country_id c.trend2#i.country_id) ///
-        vce(cluster country_id)
-    estimates store AFE_`smp'
-
-    *--- (b) Arellano-Bond difference GMM ------------------------------------*
+    *--- (a) Arellano-Bond difference GMM ------------------------------------*
     xtabond2 logd_gdp L.logd_gdp `X8' ///
         i.year c.trend#i.country_id c.trend2#i.country_id, ///
         gmm(L.logd_gdp) ///
@@ -60,7 +63,17 @@ foreach smp in stat full {
     * xtabond2 already stores e(ar1p), e(ar2p), e(hansenp), e(j) -- no estadd needed
     estimates store GMM_`smp'
 
-    *--- (c) AB GMM with COLLAPSED instruments --------------------------------*
+    * COMMON ESTIMATION SAMPLE. Difference GMM loses one further period per
+    * country than the within estimator: the differenced equation at t needs
+    * y_t and y_{t-1}, and L.logd_gdp is itself a lag, so the first two usable
+    * years are consumed. Left unrestricted, AFE would be fitted on 122 (170)
+    * more observations than the GMM columns and the comparison would confound
+    * estimator with sample. All three columns are therefore run on e(sample)
+    * from the GMM above.
+    capture drop esamp
+    gen byte esamp = e(sample)
+
+    *--- (b) AB GMM with COLLAPSED instruments --------------------------------*
     * The uncollapsed spec generates ~1,660 moment conditions against 122-170
     * countries. Hansen p = 1.000 is then a symptom of a test with no power and
     * an overfitted weight matrix, not evidence of valid instruments
@@ -77,10 +90,22 @@ foreach smp in stat full {
         iv(`X8' i.year c.trend#i.country_id c.trend2#i.country_id) ///
         nolevel robust
     estimates store GMMc_`smp'
+
+    * the collapsed variant must land on the same observations
+    count if e(sample) != esamp
+    if r(N) > 0 {
+        di as error "[`smp'] collapsed GMM sample differs in " r(N) " obs"
+    }
+
+    *--- (c) AFE within estimator with lagged y, on the GMM sample 
+    reghdfe logd_gdp L.logd_gdp `X8' if esamp, ///
+        absorb(i.year c.trend#i.country_id c.trend2#i.country_id) ///
+        vce(cluster country_id)
+    estimates store AFE_`smp'
 }
 
 *==============================================================================*
-* Side-by-side table
+**# Side-by-side table
 *==============================================================================*
 local MODELS AFE_stat GMM_stat GMMc_stat AFE_full GMM_full GMMc_full
 

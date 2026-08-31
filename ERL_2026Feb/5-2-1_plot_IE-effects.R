@@ -1,4 +1,3 @@
-
 # Plot a map of countries grouped by ALl-, Dir-, and IE-effect signs
 # Map of IE-effects sign combinations, does not include magnitude
 
