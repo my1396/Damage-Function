@@ -1,0 +1,50 @@
+BETWEEN-MODEL INTERACTIVE CONTRIBUTION: POINT ESTIMATES
+======================================================
+
+IE = delta^M8 - delta^M4, the difference between the two SEPARATELY
+ESTIMATED models: M = 8 adds the four T x P interactions to the M = 4
+direct terms. Contrast 9_decompose_IE_effects.R, which measures the
+WITHIN-model gap by zeroing the interaction coefficients inside the M = 8
+fit -- a counterfactual built from coefficients never estimated without
+the interactions present. The two differ sharply at L = 2.
+A POSITIVE value means the interactive model projects milder damages.
+
+Scenario: SSP585 | BHM aggregation | L = 0, 1, 2.
+Levels are % of counterfactual GDP; differences are percentage points.
+Point estimates only. 8-1_IE_between_model_uncertainty.R attaches the
+bootstrap bands and reproduces the IE column below exactly.
+
+--- 2100 levels and the between-model difference ---
+
+ estimator L M8 (%) M4 (%) IE (pp)
+       AFE 0 -25.94 -32.39    6.45
+       AFE 1 -26.01 -27.98    1.97
+       AFE 2 -22.11 -18.23   -3.88
+       IFE 0 -36.63 -39.65    3.02
+       IFE 1 -48.87 -47.18   -1.69
+       IFE 2 -46.55 -48.86    2.31
+
+
+--- between-model difference over the horizon (pp) ---
+
+ estimator L y2050 y2075 y2100
+       AFE 0  1.40  4.11  6.45
+       AFE 1  0.41  1.15  1.97
+       AFE 2 -0.67 -1.71 -3.88
+       IFE 0  0.65  2.19  3.02
+       IFE 1 -0.60 -1.21 -1.69
+       IFE 2  0.52  1.82  2.31
+
+
+--- largest divergence along the path ---
+
+The gap compounds, so it is widest at or near the end of the horizon;
+2100 is therefore a fair summary rather than an arbitrary slice.
+
+ estimator L max |IE| (pp) in year
+       AFE 0          6.45    2100
+       AFE 1          1.97    2100
+       AFE 2          3.88    2100
+       IFE 0          3.02    2100
+       IFE 1          1.69    2099
+       IFE 2          2.32    2095

@@ -60,7 +60,7 @@ M_CLU <- "Country resampling"
 M_PAR <- "Coefficient resampling"
 COL   <- c("#1a8f7a", "#2a78d6")
 names(COL) <- c(M_CLU, M_PAR)
-SURFACE <- "#fcfcfb"
+SURFACE <- "white"
 
 fits <- readRDS(file.path(out_dir, "lagged_climate_fits.rds"))
 lagc <- read_csv(file.path(out_dir, "lag_coefficients_long.csv"),
@@ -348,10 +348,7 @@ make_fan <- function(comp, ylim, ylab, ttl, sub, cap) {
         scale_x_continuous(breaks = c(2025, 2050, 2075, 2100)) +
         scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         coord_cartesian(ylim = ylim) +
-        labs(title = ttl, subtitle = sub, x = NULL, y = ylab,
-             caption = paste0(cap, if (n_clip > 0) sprintf(
-                 "\nVertical range clipped at [%+.0f, %+.0f] pp; see output/bootstrap_method_comparison.txt for the untruncated intervals.",
-                 100 * ylim[1], 100 * ylim[2]) else "")) +
+        labs(title = ttl, subtitle = sub, x = NULL, y = ylab, caption = cap) +
         my_theme +
         theme(
             plot.background  = element_rect(fill = SURFACE, colour = NA),
@@ -389,29 +386,20 @@ p_ie <- make_fan(
     expression("IE-effects"[t] ~ "=" ~ delta[t]^All - delta[t]^Dir),
     "Interactive contribution: two bootstraps compared",
     sub_common,
-    paste0(cap_boot,
-           "\nIE-effects are the gap shaded in fig_IE_decomposition.png; a ",
-           "POSITIVE value means interactions MITIGATE damages.\n",
-           "The methods part company here: the 90% band is ", wrange("IE"),
-           " as wide under country resampling, because IE-effects depend\n",
-           "on delta^Dir, a counterfactual whose compounded path explodes for ",
-           "a small share of draws. Either way IE is not\ndistinguishable ",
-           "from zero."))
+    NULL)
+p_ie
 ggsave(file.path(fig_dir, "fig_IE_effects_fan_bootstrap_compare.png"), p_ie,
-       width = 8.8, height = 5.8, dpi = 200, bg = SURFACE)
+       width = 8.8, height = 4.8, dpi = 200, bg = SURFACE)
 
 p_all <- make_fan(
     "All", c(-1, 1),
     expression(delta[t] ~ "= GDP(CC) / GDP(no CC) - 1"),
     "Global GDP impact: two bootstraps compared",
     sub_common,
-    paste0(cap_boot,
-           "\nFor the headline projection the two agree closely: the ",
-           "country-resampling 90% width is ", wrange("All"), " the ",
-           "coefficient-resampling width, so the\nparametric shortcut is not ",
-           "distorting the bands in fig_global_damage_fan.png."))
+    NULL)
+p_all
 ggsave(file.path(fig_dir, "fig_global_damage_fan_bootstrap_compare.png"), p_all,
-       width = 8.8, height = 5.8, dpi = 200, bg = SURFACE)
+       width = 8.8, height = 4.8, dpi = 200, bg = SURFACE)
 
 ## ========================================================================== ##
 ## 7. Summary ------------------------------------------------------------------

@@ -20,7 +20,7 @@ out_dir <- file.path(root_dir, "Revision_2026Aug", "output")
 fig_dir <- file.path(root_dir, "Revision_2026Aug", "figures")   # PNGs; set to out_dir to keep them together
 dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
 
-## ---- palette: categorical slots 1 & 2, validated for CVD + contrast --------
+## palette: categorical slots 1 & 2, validated for CVD + contrast --------------
 COL <- c(AFE = "#2a78d6", IFE = "#eb6834")
 INK        <- "#0b0b0b"
 INK_SOFT   <- "#52514e"
@@ -52,7 +52,7 @@ theme_lag <- function() {
 }
 
 ## ========================================================================== ##
-## Fig 1 -- cumulative marginal effect vs L
+## Fig 1 -- cumulative marginal effect vs L ------------------------------------
 ## ========================================================================== ##
 me <- read_csv(file.path(out_dir, "lagged_climate_marginal_effects.csv"),
                show_col_types = FALSE) %>%
@@ -85,20 +85,16 @@ p1 <- ggplot(me, aes(L, dg_dT, colour = estimator, fill = estimator)) +
         title = "Cumulative effect of temperature on GDP per-capita growth (y), by lag length",
         subtitle = "Sum of distributed-lag coefficients; shaded band is the 95% interval",
         x = "Lag length L (years)",
-        y = expression(partialdiff * y / partialdiff * T),
-        caption = paste0(
-            "L = 0 is the contemporaneous-only specification used in the paper. ",
-            "Evaluated at median precipitation."
-        )
+        y = expression(partialdiff * y / partialdiff * T)
     ) +
     theme_lag() +
     theme(legend.position = "none")  # legend is redundant with text labels
 p1
 ggsave(file.path(fig_dir, "fig_lag_marginal_effect.png"), p1,
-       width = 8.2, height = 6.0, dpi = 200, bg = SURFACE)
+       width = 8.2, height = 5.5, dpi = 300, bg = SURFACE)
 
 ## ========================================================================== ##
-## Fig 2 -- projection ratio vs L
+## Fig 2 -- projection ratio vs L ----------------------------------------------
 ## ========================================================================== ##
 gl <- read_csv(file.path(out_dir, "projection_lagged_global.csv"),
                show_col_types = FALSE) %>%
@@ -138,7 +134,7 @@ p2 <- ggplot(gl, aes(L, ratio_bhm_vs_L0, colour = estimator)) +
 ggsave(file.path(fig_dir, "fig_lag_projection_ratio.png"), p2,
        width = 8.2, height = 4.2, dpi = 200, bg = SURFACE)
 
-## ---- table view (accessibility: never color-alone) -------------------------
+## table view (accessibility: never color-alone) -------------------------------
 tbl <- me %>%
     select(spec, estimator, T_pct, L, dg_dT, se) %>%
     arrange(spec, estimator, T_pct, L)

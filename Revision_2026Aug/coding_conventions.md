@@ -16,3 +16,5 @@
 
 - Find my custom ggplot theme in `./_fig_theme.R`. Use it for all plots. 
 - For figure backround (except for maps), always use "white". I think it is the default. Don't change it to some other color.
+- fig DPI should be 300 for all figures.
+- numbers should be at least 2 digits after the decimal point.

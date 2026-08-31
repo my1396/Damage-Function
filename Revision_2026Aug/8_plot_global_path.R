@@ -16,6 +16,7 @@
 ##      figures/fig_global_damage_path_comparison.png
 ##      figures/fig_global_damage_fan.png
 ##      output/global_damage_path.csv   (both specs, long)
+##      output/global_damage_between_diff.txt  (M8 - M4, by estimator and L)
 ## ========================================================================== ##
 
 suppressMessages(library(tidyverse))
@@ -54,7 +55,80 @@ paths <- map_dfr(c("Interactive", "Direct"), function(sp) {
 write_csv(paths, file.path(out_dir, "global_damage_path.csv"))
 
 ## ========================================================================== ##
-## 1. Plot, one figure per specification ---------------------------------------
+## 1. Summary of btw-model IE-effects ------------------------------------------
+## ========================================================================== ##
+
+f_name <- file.path(out_dir, "global_damage_path.csv")
+paths  <- read_csv(f_name, show_col_types = FALSE)
+
+## Interactive (M = 8) minus Direct (M = 4), by estimator and L. This is the
+## BETWEEN-model interactive contribution: the difference between the two
+## SEPARATELY ESTIMATED models, not the within-model gap of 9_ (which zeroes
+## the interaction coefficients inside the M = 8 fit). It is the point estimate
+## that 8-1_IE_between_model_uncertainty.R attaches a bootstrap band to, so
+## computing it here makes the number available without that script's draws.
+## A POSITIVE value means the interactive model projects milder damages.
+ie_between <- paths %>%
+    select(estimator, L, year, spec, delta) %>%
+    pivot_wider(names_from = spec, values_from = delta) %>%
+    mutate(IE_between = Interactive - Direct) %>%
+    arrange(estimator, L, year)
+
+## the three tables, built once so the same objects go to disk and to console
+tab_2100 <- ie_between %>% filter(year == 2100) %>%
+    transmute(estimator, L,
+              `M8 (%)`  = round(100 * Interactive, 2),
+              `M4 (%)`  = round(100 * Direct, 2),
+              `IE (pp)` = round(100 * IE_between, 2))
+
+tab_horizon <- ie_between %>% filter(year %in% c(2050, 2075, 2100)) %>%
+    mutate(IE = round(100 * IE_between, 2)) %>%
+    select(estimator, L, year, IE) %>%
+    pivot_wider(names_from = year, values_from = IE, names_prefix = "y")
+
+## where the two specifications diverge most, and when
+tab_peak <- ie_between %>% group_by(estimator, L) %>%
+    summarise(`max |IE| (pp)` = round(100 * max(abs(IE_between)), 2),
+              `in year`       = year[which.max(abs(IE_between))],
+              .groups = "drop")
+
+sink(file.path(out_dir, "global_damage_summary.txt"))
+cat("BETWEEN-MODEL INTERACTIVE CONTRIBUTION: POINT ESTIMATES\n")
+cat("======================================================\n\n")
+cat("IE = delta^M8 - delta^M4, the difference between the two SEPARATELY\n")
+cat("ESTIMATED models: M = 8 adds the four T x P interactions to the M = 4\n")
+cat("direct terms. Contrast 9_decompose_IE_effects.R, which measures the\n")
+cat("WITHIN-model gap by zeroing the interaction coefficients inside the M = 8\n")
+cat("fit -- a counterfactual built from coefficients never estimated without\n")
+cat("the interactions present. The two differ sharply at L = 2.\n")
+cat("A POSITIVE value means the interactive model projects milder damages.\n\n")
+cat("Scenario:", SSP, "| BHM aggregation | L = 0, 1, 2.\n")
+cat("Levels are % of counterfactual GDP; differences are percentage points.\n")
+cat("Point estimates only. 8-1_IE_between_model_uncertainty.R attaches the\n")
+cat("bootstrap bands and reproduces the IE column below exactly.\n\n")
+
+cat("--- 2100 levels and the between-model difference ---\n\n")
+print(as.data.frame(tab_2100), row.names = FALSE)
+
+cat("\n\n--- between-model difference over the horizon (pp) ---\n\n")
+print(as.data.frame(tab_horizon), row.names = FALSE)
+
+cat("\n\n--- largest divergence along the path ---\n\n")
+cat("The gap compounds, so it is widest at or near the end of the horizon;\n")
+cat("2100 is therefore a fair summary rather than an arbitrary slice.\n\n")
+print(as.data.frame(tab_peak), row.names = FALSE)
+sink()
+
+cat("\nWrote output/global_damage_between_diff.txt\n")
+cat("\n=== 2100 levels and the between-model difference ===\n")
+print(as.data.frame(tab_2100), row.names = FALSE)
+cat("\n=== between-model difference over the horizon (pp) ===\n")
+print(as.data.frame(tab_horizon), row.names = FALSE)
+cat("\n=== largest divergence along the path ===\n")
+print(as.data.frame(tab_peak), row.names = FALSE)
+
+## ========================================================================== ##
+## 2. Plot, one figure per specification ---------------------------------------
 ## ========================================================================== ##
 make_plot <- function(sp) {
     d <- paths %>% filter(spec == sp)
@@ -117,13 +191,12 @@ print(as.data.frame(
 
 
 ## ========================================================================== ##
-## 2. Path, two specifications in one panel ------------------------------------
+## 3. Path, two specifications in one panel ------------------------------------
 ## ========================================================================== ##
 gp <- readr::read_csv(
-    "/Users/menghan/Documents/GDP/Shared folder/Revision_2026Aug/output/global_damage_path.csv",
+    file.path(out_dir, "global_damage_path.csv"),
     show_col_types = FALSE
-) |>
-    filter(L <= 2) |>
+)  %>% 
     mutate(
         panel = factor(paste0("L = ", L), levels = paste0("L = ", 0:2)),
         spec = factor(spec, levels = c("Interactive", "Direct"))
@@ -155,7 +228,7 @@ ggsave(file.path(fig_dir, "fig_global_damage_path_comparison.png"), p_gp,
        width = 8.8, height = 4, dpi = 200, bg = SURFACE)
 
 ## ========================================================================== ##
-## 3. Fan chart: point estimate + bootstrap density bands ----------------------
+## 4. Fan chart: point estimate + bootstrap density bands ----------------------
 ##    Requires 7_bootstrap_lagged_projection.R (path quantiles).
 ## ========================================================================== ##
 fq_file <- file.path(out_dir, "bootstrap_lagged_path_quantiles.csv")
